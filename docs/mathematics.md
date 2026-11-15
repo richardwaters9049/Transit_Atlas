@@ -7,6 +7,7 @@ Transit Atlas compares fitted Kepler catalogue measurements. This guide follows 
 - [Exact neighbours and distance contributions](#exact-neighbours-and-distance-contributions)
 - [Principal component analysis](#principal-component-analysis)
 - [Measurement sensitivity](#measurement-sensitivity)
+  - [Exact rank sensitivity](#exact-rank-sensitivity)
 - [Release comparison](#release-comparison)
 - [Held-out evaluation](#held-out-evaluation)
 - [Reproduce the results](#reproduce-the-results)
@@ -97,6 +98,12 @@ $$
 For $t=1,\dots,64$, the prime bases in feature order are 2, 3, 5, 7, 11, 13, 17 and 19. These points are interior to the interval on each varying coordinate. For example, the effective temperature interval for `K00115.03` is 5,664 to 5,883 K. That coordinate uses base 13, so scenario 1 sets it to $5664+219/13=5680.846$ K. The app samples raw values before transforming and standardising them. [Halton construction](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.Halton.html) · [Rust stability analysis](../crates/atlas-core/src/stability.rs)
 
 The model, reference measurements and exclusion rule stay fixed. **Same nearest** counts scenarios whose first reference matches the nominal first reference. **Same top five** compares membership, so reordering the same five counts as retained. For `K00115.03`, those counts are 16/64 and 0/64, respectively. This is a sensitivity check over the specified box. The joint distribution and covariance of the fitted parameters are unknown here. Treat recurrence as a count under this design. Other points in the box can produce different rankings.
+
+### Exact rank sensitivity
+
+**Check exact bounds** evaluates the minimum of each challenger’s squared-distance gap over the declared intervals. Squaring and subtracting the two distances cancels the query’s quadratic term, so the gap is affine in the eight standardised coordinates. Its minimum occurs at a corner, selected independently for each coordinate by the sign of the coefficient. The app reranks the full eligible pool at each displayed witness. [Derivation and reproducible witness](research-roadmap.md#first-milestone--exact-rank-sensitivity) · [Rust implementation](../crates/atlas-core/src/exact_sensitivity.rs)
+
+At a minimising corner, Transit Atlas uses a tolerance of `1e-12 × max(1, winner squared distance, challenger squared distance)`. A stable result requires every minimum gap to exceed its tolerance. A sufficiently negative gap yields a witness. Otherwise the app reports a near tie. The actual lookup orders equal distances by KOI ID. A logarithmic coordinate needs a strictly positive lower bound to produce a finite box.
 
 ## Release comparison
 

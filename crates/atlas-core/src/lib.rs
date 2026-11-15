@@ -2,6 +2,9 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+mod exact_sensitivity;
+pub use exact_sensitivity::ExactSensitivity;
+
 mod stability;
 pub use stability::Stability;
 mod release;

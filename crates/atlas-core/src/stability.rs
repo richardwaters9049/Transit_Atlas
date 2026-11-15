@@ -6,12 +6,12 @@ use super::{Atlas, Neighbour, Vector, FEATURE_COUNT};
 
 const TRIALS: usize = 64;
 const BASES: [usize; FEATURE_COUNT] = [2, 3, 5, 7, 11, 13, 17, 19];
-type Bounds = [Option<[f64; 2]>; FEATURE_COUNT];
+pub(super) type Bounds = [Option<[f64; 2]>; FEATURE_COUNT];
 
 #[derive(Deserialize)]
 pub(super) struct Uncertainties {
-    retrieved_utc_date: String,
-    source_sha256: String,
+    pub(super) retrieved_utc_date: String,
+    pub(super) source_sha256: String,
     ranges: BTreeMap<String, Bounds>,
 }
 
@@ -66,15 +66,34 @@ fn radical_inverse(mut number: usize, base: usize) -> f64 {
 }
 
 impl Atlas {
+    pub(super) fn quoted_bounds(&self, query_id: &str) -> Result<&Bounds, String> {
+        self.uncertainty.ranges.get(query_id).ok_or_else(|| {
+            format!(
+                "No usable quoted measurement ranges are available for {}.",
+                query_id
+            )
+        })
+    }
+
+    pub(super) fn describe_bounds(&self, values: Vector, bounds: &Bounds) -> Vec<Measurement> {
+        self.catalogue
+            .features
+            .iter()
+            .zip(values)
+            .zip(*bounds)
+            .map(|((feature, original), bounds)| Measurement {
+                name: feature.name.clone(),
+                unit: feature.unit.clone(),
+                original,
+                bounds,
+            })
+            .collect()
+    }
+
     pub fn stability(&self, query_id: &str) -> Result<Stability<'_>, String> {
         let index = self.candidate_index(query_id)?;
         let query = &self.catalogue.observations[index];
-        let bounds = self.uncertainty.ranges.get(&query.koi_id).ok_or_else(|| {
-            format!(
-                "No usable quoted measurement ranges are available for {}.",
-                query.koi_id
-            )
-        })?;
+        let bounds = self.quoted_bounds(&query.koi_id)?;
         let (eligible, _) = self.eligible_references(query.host_id);
         let baseline = self.nearest(&self.scaled[index], &eligible)?;
         let baseline_ids: Vec<_> = baseline
@@ -148,19 +167,7 @@ impl Atlas {
             replacements,
             replacement_count,
             scenarios,
-            measurements: self
-                .catalogue
-                .features
-                .iter()
-                .zip(query.values)
-                .zip(*bounds)
-                .map(|((feature, original), bounds)| Measurement {
-                    name: feature.name.clone(),
-                    unit: feature.unit.clone(),
-                    original,
-                    bounds,
-                })
-                .collect(),
+            measurements: self.describe_bounds(query.values, bounds),
         })
     }
 }

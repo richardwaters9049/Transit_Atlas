@@ -14,7 +14,7 @@ Offline operation makes a reviewed case portable and reproducible. The limiting 
 
 ## First milestone · exact rank sensitivity
 
-Extend the current 64-scenario check with a way to prove when the nearest reference stays first throughout the declared measurement ranges, or produce a specific set of measurements that changes it. Evaluate the calculation in eight dimensions using the same fixed scaler and eligible reference pool.
+Implemented as **Check exact bounds**. The app determines when the nearest reference stays first throughout the declared measurement ranges or produces a specific set of measurements that changes it. The calculation uses all eight dimensions with the same fixed scaler and eligible reference pool.
 
 For nominal nearest reference $a$, challenger $b$, and standardised query $z$, the difference between squared distances is affine in $z$.
 
@@ -79,7 +79,7 @@ print(f"{gap(corner):+.6f}")
 print(winner["koi_id"])
 ```
 
-For the first implementation, ship the exact nearest-reference check with its witness, the measurement bounds and a reproducible export. Compare the result with the existing Halton scenarios and measure how often the sampled check leaves a change undiscovered. Validate the solver against exhaustive corner enumeration for small synthetic cases, include same-distance ties and fixed coordinates, and rerank every reported witness in the pinned catalogue. This calculation tests sensitivity to the declared ranges. Correlated or posterior samples, where available, can support a separate analysis. [Current sensitivity method](mathematics.md#measurement-sensitivity)
+The desktop shows the measurement ranges and the witness ranking side by side. A saved study stores both positions, the range digest and the checked evidence, and reruns the calculation on open. The Rust tests compare the corner method with exhaustive enumeration and exercise an equal-distance boundary, fixed coordinates and a real logarithmic boundary. A future evaluation can measure how often the 64 scenarios miss a change across the catalogue and assess the role of measurement covariance. [Current sensitivity method](mathematics.md#measurement-sensitivity)
 
 ## Second milestone · replay the observational evidence
 
