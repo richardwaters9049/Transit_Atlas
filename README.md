@@ -118,7 +118,12 @@ The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation 
 
 ## Technical documentation
 
-- [Mathematics](docs/mathematics.md) derives the metric and projection, walks through a real Kepler comparison and explains what each sensitivity calculation measures.
+Start with the [documentation index](docs/README.md) for a guided route through the science and implementation.
+
+- [K-nearest neighbours](docs/knn.md) explains the KNN method, the exact five-neighbour search, why `k = 5` was selected and how the held-out classifier evaluation differs from the app's exploratory lookup.
+- [Linear algebra](docs/linear-algebra.md) introduces the vectors, matrices, standardisation, Euclidean metric, feature contributions, PCA and SVD used by the project.
+- [The eight-dimensional feature space](docs/eight-dimensional-space.md) documents all eight axes, source fields, units, transforms, scaling and the distinction between the full 8D ranking and the 3D display.
+- [Mathematics](docs/mathematics.md) provides the detailed derivations, worked Kepler calculation and sensitivity mathematics.
 - [Data and methods](docs/methods.md) records catalogue coverage, feature definitions and the projection audit.
 - [Kepler light curves](docs/light-curves.md) defines the KOI-to-KIC mapping, BKJD phase folding, flux normalisation, quality filtering and provenance contract.
 - [Held-out evaluation](docs/evaluation.md) describes the host-based protocol, baselines and failure cases.
@@ -136,6 +141,6 @@ The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation 
 | `data/generated/` | Catalogue, comparison data and reproducible folded light-curve documents bundled with the app |
 | `data/studies/` | Portable `.atlas.json` example investigations that can be reopened in the app |
 | `data/fixtures/`, `data/evaluation/` | Verified lookup fixture and held-out results |
-| `docs/` | Mathematics, scientific methods, light-curve calculations, evaluation, research roadmap and media |
+| `docs/` | KNN, linear algebra, eight-dimensional feature space, mathematical derivations, scientific methods, evaluation, light curves and research records |
 
 The pinned cumulative table contains 9,564 Kepler signals. Of these, 9,199 have usable values for all eight measurements, including 1,872 candidates. The [snapshot manifest](data/raw/kepler-koi-cumulative-2026-11-14.json) records the query, retrieval date and SHA-256 checksum. [NASA Exoplanet Archive cumulative catalogue](https://doi.org/10.26133/NEA4)
