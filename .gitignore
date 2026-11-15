@@ -7,3 +7,4 @@ desktop/dist/
 .DS_Store
 
 /desktop/src-tauri/gen/schemas/
+.cache/

@@ -1,0 +1,369 @@
+{
+  "schema": "transit-atlas.study",
+  "version": 1,
+  "model": "host-split-zscore-pca-v1",
+  "saved_at": "2026-11-15T18:16:27.458Z",
+  "provenance": {
+    "catalogue": {
+      "doi": "10.26133/NEA4",
+      "retrieved_utc_date": "2026-11-14",
+      "rows": 9564,
+      "sha256": "91290c1efd8a7c3a5695cd05494b17c2f6f59a833ebf5ca3167862ddfa35ddc4"
+    },
+    "variation_sha256": null
+  },
+  "selection": {
+    "candidate": "K00005.01",
+    "neighbour": "K01090.01",
+    "view": {
+      "kind": "projection",
+      "filter": "all"
+    },
+    "camera": {
+      "position": [
+        7.243387427662842,
+        5.05887375900262,
+        11.497440361369593
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "focused": false
+    }
+  },
+  "evidence": {
+    "feature_metadata": [
+      {
+        "field": "koi_period",
+        "log10": true,
+        "mean": 0.9622972725715824,
+        "name": "Orbital period",
+        "scale": 0.7914054757882779,
+        "unit": "days"
+      },
+      {
+        "field": "koi_duration",
+        "log10": true,
+        "mean": 0.614861103162024,
+        "name": "Transit duration",
+        "scale": 0.3291657908210453,
+        "unit": "hours"
+      },
+      {
+        "field": "koi_depth",
+        "log10": true,
+        "mean": 2.996296666572526,
+        "name": "Transit depth",
+        "scale": 1.0826817269801865,
+        "unit": "ppm"
+      },
+      {
+        "field": "koi_impact",
+        "log10": false,
+        "mean": 0.7317414836590013,
+        "name": "Transit impact parameter",
+        "scale": 2.9112405836049033,
+        "unit": "stellar radii (ratio)"
+      },
+      {
+        "field": "koi_model_snr",
+        "log10": true,
+        "mean": 1.7117877646732826,
+        "name": "Transit signal-to-noise",
+        "scale": 0.7311882340049918,
+        "unit": "ratio"
+      },
+      {
+        "field": "koi_steff",
+        "log10": false,
+        "mean": 5724.739235690818,
+        "name": "Stellar effective temperature",
+        "scale": 807.2475920490559,
+        "unit": "K"
+      },
+      {
+        "field": "koi_slogg",
+        "log10": false,
+        "mean": 4.320319211481916,
+        "name": "Stellar surface gravity",
+        "scale": 0.41328404017327064,
+        "unit": "log10(cm/s²)"
+      },
+      {
+        "field": "koi_srad",
+        "log10": true,
+        "mean": 0.05258570582886359,
+        "name": "Stellar radius",
+        "scale": 0.2554699241360374,
+        "unit": "solar radii"
+      }
+    ],
+    "variance_ratios": [
+      0.27601723234416453,
+      0.23954633242408077,
+      0.1839863001984744
+    ],
+    "query": {
+      "disposition": "CANDIDATE",
+      "host_id": 8554498,
+      "koi_id": "K00005.01",
+      "position": [
+        0.8940616,
+        0.0471334,
+        -1.3824581
+      ],
+      "values": [
+        4.780327581,
+        2.0253,
+        960.8,
+        0.952,
+        380.8,
+        5937,
+        4.012,
+        1.787
+      ]
+    },
+    "neighbours": [
+      {
+        "distance": 0.9234629910511107,
+        "distance_squared": 0.8527838958410638,
+        "observation": {
+          "disposition": "FALSE POSITIVE",
+          "host_id": 3232859,
+          "koi_id": "K01090.01",
+          "position": [
+            0.9121104,
+            0.1927995,
+            -1.2775197
+          ],
+          "values": [
+            8.387210055,
+            1.6477,
+            4952,
+            1.284,
+            180.6,
+            6089,
+            4.044,
+            1.795
+          ]
+        },
+        "squared_deltas": [
+          0.09518103826473769,
+          0.07411317209151515,
+          0.4326517520606447,
+          0.013005287992389102,
+          0.1963251111446684,
+          0.035454687304696184,
+          0.005995186361993674,
+          0.00005766062041893933
+        ]
+      },
+      {
+        "distance": 0.9499063588561354,
+        "distance_squared": 0.9023220905953211,
+        "observation": {
+          "disposition": "FALSE POSITIVE",
+          "host_id": 10019399,
+          "koi_id": "K01796.01",
+          "position": [
+            1.1600961,
+            -0.2377373,
+            -0.9425538
+          ],
+          "values": [
+            11.805707539,
+            2.0494,
+            2052.1,
+            1.015,
+            124.9,
+            6065,
+            3.888,
+            1.891
+          ]
+        },
+        "squared_deltas": [
+          0.24613790946125202,
+          0.00024358590863942034,
+          0.09265779020445791,
+          0.0004683008060113245,
+          0.4384031621480665,
+          0.025142382132970154,
+          0.09002147021681077,
+          0.009247489717113021
+        ]
+      },
+      {
+        "distance": 1.0037035418107585,
+        "distance_squared": 1.007420799843461,
+        "observation": {
+          "disposition": "FALSE POSITIVE",
+          "host_id": 11200767,
+          "koi_id": "K03667.01",
+          "position": [
+            0.5781085,
+            0.2444425,
+            -1.3153664
+          ],
+          "values": [
+            2.489549075,
+            2.4345,
+            2829.7,
+            1.33,
+            160.6,
+            6184,
+            4.138,
+            1.406
+          ]
+        },
+        "squared_deltas": [
+          0.12817649128469893,
+          0.058950308945329426,
+          0.18773400897154585,
+          0.016858829016407725,
+          0.26296113622265815,
+          0.09362253366396338,
+          0.09294880730762892,
+          0.16616868443122865
+        ]
+      },
+      {
+        "distance": 1.0045682382538843,
+        "distance_squared": 1.0091573453085128,
+        "observation": {
+          "disposition": "FALSE POSITIVE",
+          "host_id": 5771589,
+          "koi_id": "K06625.01",
+          "position": [
+            0.9208744,
+            -0.1735987,
+            -0.7955219
+          ],
+          "values": [
+            10.738427243,
+            2.3544,
+            1684.2,
+            0.036,
+            112.8,
+            6180,
+            4.007,
+            1.686
+          ]
+        },
+        "squared_deltas": [
+          0.19724708695407497,
+          0.03946435967894386,
+          0.05069039213681829,
+          0.09899989949323221,
+          0.5222124727241385,
+          0.09061477798887661,
+          0.0001463668545408575,
+          0.009781989477887358
+        ]
+      },
+      {
+        "distance": 1.0339521585640596,
+        "distance_squared": 1.0690570661992782,
+        "observation": {
+          "disposition": "FALSE POSITIVE",
+          "host_id": 8695779,
+          "koi_id": "K06061.01",
+          "position": [
+            1.4699286,
+            0.5333754,
+            -0.7949656
+          ],
+          "values": [
+            10.238939876,
+            3.4851,
+            3153.1,
+            1.022,
+            427.6,
+            6244,
+            3.986,
+            1.807
+          ]
+        },
+        "squared_deltas": [
+          0.17471327339475665,
+          0.5128438459607584,
+          0.2272344107708863,
+          0.0005781491432238591,
+          0.004740030021589016,
+          0.14463161460267973,
+          0.003957759746784695,
+          0.00035798255859942015
+        ]
+      }
+    ],
+    "projection_audit": {
+      "eligible_references": 5783,
+      "koi_id": "K00005.01",
+      "projected_neighbours": [
+        {
+          "full_distance": 0.9234629910511107,
+          "full_rank": 1,
+          "koi_id": "K01090.01",
+          "omitted_share": 0.9618233413834568,
+          "position": [
+            0.9121104,
+            0.1927995,
+            -1.2775197
+          ],
+          "projected_distance": 0.18043403133890792
+        },
+        {
+          "full_distance": 1.146912994347579,
+          "full_rank": 13,
+          "koi_id": "K00381.01",
+          "omitted_share": 0.9346940302416621,
+          "position": [
+            0.6872684,
+            -0.0522056,
+            -1.2000508
+          ],
+          "projected_distance": 0.2930939910344973
+        },
+        {
+          "full_distance": 1.1664356308462034,
+          "full_rank": 15,
+          "koi_id": "K00024.01",
+          "omitted_share": 0.9161922587150709,
+          "position": [
+            0.5578312,
+            0.0641144,
+            -1.4086733
+          ],
+          "projected_distance": 0.3376780611117637
+        },
+        {
+          "full_distance": 1.0037035418107585,
+          "full_rank": 3,
+          "koi_id": "K03667.01",
+          "omitted_share": 0.8577967235006758,
+          "position": [
+            0.5781085,
+            0.2444425,
+            -1.3153664
+          ],
+          "projected_distance": 0.3784950971298175
+        },
+        {
+          "full_distance": 2.1516025411188378,
+          "full_rank": 609,
+          "koi_id": "K04228.01",
+          "omitted_share": 0.9680671925921157,
+          "position": [
+            1.0522938,
+            0.1029616,
+            -1.7283993
+          ],
+          "projected_distance": 0.38448606072199804
+        }
+      ],
+      "shared": 2
+    },
+    "context_points": []
+  }
+}

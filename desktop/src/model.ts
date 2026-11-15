@@ -54,6 +54,71 @@ export const getCatalogue = () => invoke<Catalogue>("catalogue");
 
 export const getNeighbours = (queryId: string) => invoke<Lookup>("neighbours", { queryId });
 
+export interface FoldedLightCurvePoint {
+  phase: number;
+  phase_days: number;
+  time_bkjd: number;
+  relative_flux_ppm: number;
+  relative_flux_error_ppm: number | null;
+  quality: number;
+  cadenceno: number | null;
+}
+
+export interface LightCurveDocument {
+  schema: "transit-atlas.kepler-lightcurve";
+  version: 1;
+  identity: { koi_id: string; host_id: number; signal_role: "candidate" | "reference" };
+  ephemeris: {
+    period_days: number;
+    epoch_bkjd: number;
+    duration_hours: number;
+    epoch_definition: string;
+  };
+  source: {
+    archive: string;
+    mission: string;
+    data_uri: string;
+    product_filename: string;
+    local_file: string;
+    sha256: string;
+    bytes: number;
+    author: string;
+    quarter: number;
+    data_release: number;
+    cadence: string;
+    time_format: string;
+    time_scale: string;
+    time_unit: string;
+    flux_unit: string;
+    fits_metadata: Record<string, string | number>;
+  };
+  processing: {
+    reader: string;
+    reader_version: string;
+    flux_column: string;
+    quality_bitmask: number;
+    quality_rule: string;
+    normalization: string;
+    phase_convention: string;
+    phase_origin: string;
+    source_cadences_preserved: boolean;
+  };
+  folded: {
+    normalization: string;
+    normalization_median_flux: number;
+    quality_bitmask: number;
+    cadences_total: number;
+    cadences_used: number;
+    cadences_quality_rejected: number;
+    cadences_invalid_rejected: number;
+    transit_half_duration_phase: number;
+    points: FoldedLightCurvePoint[];
+  };
+}
+
+export const getLightCurve = (koiId: string, quarter = 4) =>
+  invoke<LightCurveDocument>("light_curve", { koiId, quarter });
+
 export interface ProjectedNeighbour {
   koi_id: string;
   position: Position;

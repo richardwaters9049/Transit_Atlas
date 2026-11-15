@@ -1,0 +1,45 @@
+{
+  "archive": "NASA Exoplanet Archive",
+  "endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+  "query": "select kepoi_name,kepid,koi_disposition,koi_pdisposition,koi_vet_date,koi_disp_prov,koi_period,koi_period_err1,koi_period_err2,koi_time0bk,koi_time0bk_err1,koi_time0bk_err2,koi_duration,koi_duration_err1,koi_duration_err2 from cumulative where kepoi_name in ('K00115.03','K02961.01')",
+  "retrieved_at_utc": "2026-11-15T17:37:37.449999+00:00",
+  "rows": [
+    {
+      "kepid": 9579641,
+      "kepoi_name": "K00115.03",
+      "koi_disp_prov": "q1_q17_dr25_sup_koi",
+      "koi_disposition": "CANDIDATE",
+      "koi_duration": 3.133,
+      "koi_duration_err1": 0.407,
+      "koi_duration_err2": -0.407,
+      "koi_pdisposition": "CANDIDATE",
+      "koi_period": 3.43591631,
+      "koi_period_err1": 4.729e-05,
+      "koi_period_err2": -4.729e-05,
+      "koi_time0bk": 132.6624,
+      "koi_time0bk_err1": 0.011,
+      "koi_time0bk_err2": -0.011,
+      "koi_vet_date": "2018-08-16 00:00:00"
+    },
+    {
+      "kepid": 10471515,
+      "kepoi_name": "K02961.01",
+      "koi_disp_prov": "q1_q17_dr25_sup_koi",
+      "koi_disposition": "CONFIRMED",
+      "koi_duration": 2.924,
+      "koi_duration_err1": 0.254,
+      "koi_duration_err2": -0.254,
+      "koi_pdisposition": "CANDIDATE",
+      "koi_period": 3.7847507,
+      "koi_period_err1": 4e-05,
+      "koi_period_err2": -4e-05,
+      "koi_time0bk": 133.50785,
+      "koi_time0bk_err1": 0.00813,
+      "koi_time0bk_err2": -0.00813,
+      "koi_vet_date": "2018-08-16 00:00:00"
+    }
+  ],
+  "schema": "transit-atlas.kepler-ephemerides",
+  "table": "cumulative",
+  "version": 1
+}
