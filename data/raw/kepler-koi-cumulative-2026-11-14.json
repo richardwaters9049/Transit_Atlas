@@ -1,0 +1,12 @@
+{
+  "archive": "NASA Exoplanet Archive",
+  "table": "cumulative",
+  "retrieved_utc_date": "2026-11-14",
+  "doi": "10.26133/NEA4",
+  "tap_endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+  "query": "SELECT kepoi_name,kepid,koi_disposition,koi_period,koi_duration,koi_depth,koi_impact,koi_model_snr,koi_steff,koi_slogg,koi_srad FROM cumulative ORDER BY kepoi_name",
+  "format": "csv",
+  "file": "kepler-koi-cumulative-2026-11-14.csv",
+  "rows": 9564,
+  "sha256": "91290c1efd8a7c3a5695cd05494b17c2f6f59a833ebf5ca3167862ddfa35ddc4"
+}

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Transit Atlas</title>
+    <style>
+      /* Match the native window before the stylesheets are ready. */
+      html { background: #090b0e; color-scheme: dark; }
+    </style>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/opening.css" />
+  </head>
+  <body>
+    <section class="opening" id="opening" role="dialog" aria-modal="true" aria-labelledby="opening-title">
+      <div class="opening-scene" id="opening-scene" aria-hidden="true"></div>
+      <div class="opening-copy">
+        <span class="atlas-mark opening-mark" aria-hidden="true">
+          <span class="atlas-planet"></span><span class="atlas-orbit"></span><span class="atlas-pulse"></span>
+        </span>
+        <h1 class="brand-wordmark" id="opening-title">Transit Atlas</h1>
+        <p class="opening-subtitle">Kepler transit signal explorer</p>
+        <div class="opening-progress">
+          <div class="opening-progress-track" aria-hidden="true"><span id="opening-progress-bar"></span></div>
+          <p id="opening-status" role="status">Loading the Kepler catalogue…</p>
+        </div>
+      </div>
+      <button id="skip-opening" class="quiet opening-skip" type="button">Skip intro</button>
+    </section>
+    <div class="workbench" id="workbench" hidden inert>
+      <header class="masthead">
+        <div class="branding" data-arrival="0">
+          <span class="atlas-mark" aria-hidden="true">
+            <span class="atlas-planet"></span><span class="atlas-orbit"></span><span class="atlas-pulse"></span>
+          </span>
+          <div><h1 class="brand-wordmark">Transit Atlas</h1><p>Kepler transit signal explorer</p></div>
+        </div>
+        <div class="masthead-tools">
+          <p class="archive" id="archive" data-arrival="1">Loading catalogue…</p>
+          <div class="study-actions" data-arrival="2">
+            <button class="quiet" type="button" id="open-study" disabled>Open study…</button>
+            <button class="quiet" type="button" id="save-study" disabled>Save study…</button>
+          </div>
+        </div>
+      </header>
+      <main>
+        <form id="search">
+          <label for="query" data-arrival="1">Candidate KOI</label>
+          <div class="search-fields" data-arrival="2">
+            <input id="query" list="candidates" autocomplete="off" spellcheck="false" required disabled />
+            <datalist id="candidates"></datalist>
+            <button type="submit" disabled>Find neighbours</button>
+          </div>
+          <p class="form-error" id="error" role="alert" data-arrival="2" hidden></p>
+          <p class="study-status" id="study-status" role="status"></p>
+        </form>
+        <div class="workspace">
+          <section class="plot-panel" aria-labelledby="plot-title" data-arrival="2">
+            <header class="panel-heading">
+              <div data-arrival="3"><h2 id="plot-title">Kepler signals</h2><p id="projection"></p></div>
+              <div class="plot-actions" data-arrival="4">
+                <button class="quiet" id="run-stability" type="button" aria-pressed="false" disabled>Explore uncertainty</button>
+                <button class="quiet" id="compare-release" type="button" aria-pressed="false" disabled>Compare releases</button>
+                <button id="example" class="quiet" type="button" aria-pressed="false" disabled>3D ranking example</button>
+                <button id="expand-plot" class="quiet" type="button" aria-pressed="false" disabled>Expand 3D</button>
+              </div>
+            </header>
+            <p class="plot-status" id="plot-status" role="status" hidden></p>
+            <div id="release-controls" class="release-controls" data-arrival="4" hidden>
+              <button class="quiet" id="release-dr24" type="button" aria-pressed="false">DR24</button>
+              <button class="quiet" id="release-current" type="button" aria-pressed="false">Cumulative</button>
+              <output id="release-readout" aria-live="polite"></output>
+            </div>
+            <div id="release-fallback" class="release-fallback" hidden>
+              <button class="quiet" id="release-example" type="button">Try K00005.01</button>
+            </div>
+            <div class="scenario-controls" id="scenario-controls" data-arrival="4" hidden>
+              <button class="quiet" id="nominal-scenario" type="button">Catalogue values</button>
+              <label for="scenario-slider">Measurement scenario</label>
+              <input type="range" id="scenario-slider" min="0" max="64" step="1" value="0" />
+              <output id="scenario-readout" for="scenario-slider" aria-live="polite"></output>
+            </div>
+            <ul id="legend" class="legend plot-key" data-arrival="4" aria-label="Point colours"></ul>
+            <div class="viewport" id="viewport" data-arrival="3">
+              <div class="plot" id="plot" aria-label="Interactive three-dimensional point cloud"></div>
+              <div class="plot-overlay" id="axes" aria-hidden="true"></div>
+              <div class="plot-overlay" id="point-markers" aria-hidden="true"></div>
+              <button class="quiet focus-neighbours" id="focus-neighbours" type="button" data-arrival="5" aria-pressed="false" hidden>Focus on neighbours</button>
+              <div class="viewport-controls" data-arrival="5">
+                <span class="quiet" id="pinch-hint" hidden>Pinch to zoom</span>
+                <button class="quiet" id="reset" type="button" disabled>Reset view</button>
+              </div>
+            </div>
+            <div class="plot-footer" data-arrival="6">
+              <p class="plot-caption" id="projected-lines" hidden>Lines connect projected positions of neighbours ranked in 8D.</p>
+              <p id="controls">Drag to orbit · Scroll to zoom · Click a candidate</p>
+            </div>
+          </section>
+          <section class="results-panel" aria-labelledby="results-title" data-arrival="2">
+            <header class="panel-heading">
+              <div data-arrival="3"><h2 id="results-title">Nearest neighbours</h2><p id="summary" role="status"></p></div>
+              <div class="inspector-shortcuts" data-arrival="4">
+                <button id="jump-ranking" class="quiet" type="button" aria-controls="ranking-section" disabled>Ranking</button>
+                <button id="jump-distance" class="quiet" type="button" aria-controls="detail-section" disabled>Distance</button>
+              </div>
+            </header>
+            <div class="inspector-scroll" id="inspector-scroll">
+              <p id="uncertainty" class="notice" data-arrival="4" hidden></p>
+              <details class="inspector-section" id="ranking-section" data-arrival="5" open>
+                <summary id="ranking-title">Neighbour ranking</summary>
+                <div class="inspector-body">
+                  <ol id="ranks" class="ranks" aria-label="Neighbours ranked in eight dimensions"></ol>
+                </div>
+              </details>
+              <details id="detail-section" class="inspector-section" data-arrival="6" open>
+                <summary id="detail-title">Distance breakdown</summary>
+                <div id="detail" class="detail inspector-body"></div>
+              </details>
+              <details id="stability" class="inspector-section stability" data-arrival="6" open hidden>
+                <summary>Across all scenarios</summary>
+                <div class="inspector-body">
+                  <p id="stability-status" role="status"></p>
+                  <div id="stability-result"></div>
+                </div>
+              </details>
+              <details id="release-inspector" class="inspector-section release-inspector" data-arrival="6" open hidden>
+                <summary>Changes across releases</summary>
+                <div class="detail inspector-body">
+                  <p id="release-summary"></p>
+                  <div id="release-measurements"></div>
+                  <p id="release-provenance" class="footnote"></p>
+                </div>
+              </details>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <dialog id="plot-modal" class="plot-modal" aria-labelledby="plot-title"></dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

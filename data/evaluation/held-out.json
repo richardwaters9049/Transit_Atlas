@@ -1,0 +1,673 @@
+{
+  "snapshot": {
+    "archive": "NASA Exoplanet Archive",
+    "table": "cumulative",
+    "retrieved_utc_date": "2026-11-14",
+    "doi": "10.26133/NEA4",
+    "tap_endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+    "query": "SELECT kepoi_name,kepid,koi_disposition,koi_period,koi_duration,koi_depth,koi_impact,koi_model_snr,koi_steff,koi_slogg,koi_srad FROM cumulative ORDER BY kepoi_name",
+    "format": "csv",
+    "file": "kepler-koi-cumulative-2026-11-14.csv",
+    "rows": 9564,
+    "sha256": "91290c1efd8a7c3a5695cd05494b17c2f6f59a833ebf5ca3167862ddfa35ddc4"
+  },
+  "audit": {
+    "total_rows": 9564,
+    "usable_rows": 9199,
+    "excluded_rows": 365,
+    "by_disposition": {
+      "CANDIDATE": {
+        "usable": 1872,
+        "excluded": 105
+      },
+      "CONFIRMED": {
+        "usable": 2746,
+        "excluded": 2
+      },
+      "FALSE POSITIVE": {
+        "usable": 4581,
+        "excluded": 258
+      }
+    },
+    "feature_exclusions_by_disposition": {
+      "koi_period": {},
+      "koi_duration": {},
+      "koi_depth": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "non_positive_log_input": 1,
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_impact": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_model_snr": {
+        "FALSE POSITIVE": {
+          "missing": 257,
+          "non_positive_log_input": 1
+        },
+        "CANDIDATE": {
+          "non_positive_log_input": 1,
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_steff": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_slogg": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_srad": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      }
+    }
+  },
+  "labelled_partitions": {
+    "train": {
+      "hosts": 5089,
+      "rows_by_disposition": {
+        "CONFIRMED": 2130,
+        "FALSE POSITIVE": 3653
+      }
+    },
+    "validation": {
+      "hosts": 667,
+      "rows_by_disposition": {
+        "CONFIRMED": 303,
+        "FALSE POSITIVE": 465
+      }
+    },
+    "test": {
+      "hosts": 668,
+      "rows_by_disposition": {
+        "FALSE POSITIVE": 463,
+        "CONFIRMED": 313
+      }
+    }
+  },
+  "complete_case_coverage": {
+    "train": {
+      "CANDIDATE": {
+        "raw": 1573,
+        "usable": 1490
+      },
+      "CONFIRMED": {
+        "raw": 2132,
+        "usable": 2130
+      },
+      "FALSE POSITIVE": {
+        "raw": 3860,
+        "usable": 3653
+      }
+    },
+    "validation": {
+      "CANDIDATE": {
+        "raw": 211,
+        "usable": 201
+      },
+      "CONFIRMED": {
+        "raw": 303,
+        "usable": 303
+      },
+      "FALSE POSITIVE": {
+        "raw": 496,
+        "usable": 465
+      }
+    },
+    "test": {
+      "CANDIDATE": {
+        "raw": 193,
+        "usable": 181
+      },
+      "CONFIRMED": {
+        "raw": 313,
+        "usable": 313
+      },
+      "FALSE POSITIVE": {
+        "raw": 483,
+        "usable": 463
+      }
+    }
+  },
+  "majority_label": "FALSE POSITIVE",
+  "selection": "Highest validation balanced agreement, with smaller k breaking ties",
+  "validation": {
+    "3": {
+      "knn": {
+        "rows": 768,
+        "agreement": 0.90625,
+        "balanced_agreement": 0.9053337591823698,
+        "recall": {
+          "CONFIRMED": 0.900990099009901,
+          "FALSE POSITIVE": 0.9096774193548387
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 273,
+            "FALSE POSITIVE": 30
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 42,
+            "FALSE POSITIVE": 423
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 768,
+        "agreement": 0.60546875,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 303
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 465
+          }
+        }
+      }
+    },
+    "5": {
+      "knn": {
+        "rows": 768,
+        "agreement": 0.9140625,
+        "balanced_agreement": 0.9175343340785691,
+        "recall": {
+          "CONFIRMED": 0.933993399339934,
+          "FALSE POSITIVE": 0.9010752688172043
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 283,
+            "FALSE POSITIVE": 20
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 46,
+            "FALSE POSITIVE": 419
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 768,
+        "agreement": 0.60546875,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 303
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 465
+          }
+        }
+      }
+    },
+    "7": {
+      "knn": {
+        "rows": 768,
+        "agreement": 0.9127604166666666,
+        "balanced_agreement": 0.9141594804641755,
+        "recall": {
+          "CONFIRMED": 0.9207920792079208,
+          "FALSE POSITIVE": 0.9075268817204301
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 279,
+            "FALSE POSITIVE": 24
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 43,
+            "FALSE POSITIVE": 422
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 768,
+        "agreement": 0.60546875,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 303
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 465
+          }
+        }
+      }
+    }
+  },
+  "selected_k": 5,
+  "test": {
+    "knn": {
+      "rows": 776,
+      "agreement": 0.9072164948453608,
+      "balanced_agreement": 0.9129306716165582,
+      "recall": {
+        "CONFIRMED": 0.9424920127795527,
+        "FALSE POSITIVE": 0.8833693304535637
+      },
+      "confusion_actual_by_vote": {
+        "CONFIRMED": {
+          "CONFIRMED": 295,
+          "FALSE POSITIVE": 18
+        },
+        "FALSE POSITIVE": {
+          "CONFIRMED": 54,
+          "FALSE POSITIVE": 409
+        }
+      }
+    },
+    "majority_baseline": {
+      "rows": 776,
+      "agreement": 0.5966494845360825,
+      "balanced_agreement": 0.5,
+      "recall": {
+        "CONFIRMED": 0.0,
+        "FALSE POSITIVE": 1.0
+      },
+      "confusion_actual_by_vote": {
+        "CONFIRMED": {
+          "CONFIRMED": 0,
+          "FALSE POSITIVE": 313
+        },
+        "FALSE POSITIVE": {
+          "CONFIRMED": 0,
+          "FALSE POSITIVE": 463
+        }
+      }
+    }
+  },
+  "test_signal_to_noise_bands": {
+    "below 10": {
+      "knn": {
+        "rows": 79,
+        "agreement": 0.8354430379746836,
+        "balanced_agreement": 0.6324324324324324,
+        "recall": {
+          "CONFIRMED": 0.4,
+          "FALSE POSITIVE": 0.8648648648648649
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 2,
+            "FALSE POSITIVE": 3
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 10,
+            "FALSE POSITIVE": 64
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 79,
+        "agreement": 0.9367088607594937,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 5
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 74
+          }
+        }
+      }
+    },
+    "10 to below 20": {
+      "knn": {
+        "rows": 206,
+        "agreement": 0.8932038834951457,
+        "balanced_agreement": 0.8972158657513349,
+        "recall": {
+          "CONFIRMED": 0.9347826086956522,
+          "FALSE POSITIVE": 0.8596491228070176
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 86,
+            "FALSE POSITIVE": 6
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 16,
+            "FALSE POSITIVE": 98
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 206,
+        "agreement": 0.5533980582524272,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 92
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 114
+          }
+        }
+      }
+    },
+    "20 and above": {
+      "knn": {
+        "rows": 491,
+        "agreement": 0.924643584521385,
+        "balanced_agreement": 0.9282575757575757,
+        "recall": {
+          "CONFIRMED": 0.9583333333333334,
+          "FALSE POSITIVE": 0.8981818181818182
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 207,
+            "FALSE POSITIVE": 9
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 28,
+            "FALSE POSITIVE": 247
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 491,
+        "agreement": 0.560081466395112,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 216
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 275
+          }
+        }
+      }
+    }
+  },
+  "exploratory_review_flags": {
+    "validation_percentile": 95,
+    "kth_distance_threshold": 1.4301354036130114,
+    "mixed_rows": 244,
+    "distant_rows": 28,
+    "unflagged": {
+      "knn": {
+        "rows": 505,
+        "agreement": 0.9742574257425742,
+        "balanced_agreement": 0.9761224422767432,
+        "recall": {
+          "CONFIRMED": 0.9849246231155779,
+          "FALSE POSITIVE": 0.9673202614379085
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 196,
+            "FALSE POSITIVE": 3
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 10,
+            "FALSE POSITIVE": 296
+          }
+        }
+      },
+      "majority_baseline": {
+        "rows": 505,
+        "agreement": 0.6059405940594059,
+        "balanced_agreement": 0.5,
+        "recall": {
+          "CONFIRMED": 0.0,
+          "FALSE POSITIVE": 1.0
+        },
+        "confusion_actual_by_vote": {
+          "CONFIRMED": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 199
+          },
+          "FALSE POSITIVE": {
+            "CONFIRMED": 0,
+            "FALSE POSITIVE": 306
+          }
+        }
+      }
+    }
+  },
+  "correlation_sensitivity": {
+    "strongest_absolute_training_pearson_pair": [
+      "koi_slogg",
+      "koi_srad"
+    ],
+    "pearson_r": -0.9805175897012116,
+    "omitted_field": "koi_srad",
+    "neighbour_sets_changed": 480,
+    "votes_changed": 14,
+    "test_without_field": {
+      "rows": 776,
+      "agreement": 0.9072164948453608,
+      "balanced_agreement": 0.9118956106514673,
+      "recall": {
+        "CONFIRMED": 0.9361022364217252,
+        "FALSE POSITIVE": 0.8876889848812095
+      },
+      "confusion_actual_by_vote": {
+        "CONFIRMED": {
+          "CONFIRMED": 293,
+          "FALSE POSITIVE": 20
+        },
+        "FALSE POSITIVE": {
+          "CONFIRMED": 52,
+          "FALSE POSITIVE": 411
+        }
+      }
+    }
+  },
+  "test_disagreements": [
+    {
+      "koi_id": "K04053.01",
+      "host_id": 1718958,
+      "archive_label": "CONFIRMED",
+      "vote": "FALSE POSITIVE",
+      "signal_to_noise": 8.1,
+      "neighbours": [
+        {
+          "koi_id": "K04387.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.3385323378074218
+        },
+        {
+          "koi_id": "K07858.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.3426195074716541
+        },
+        {
+          "koi_id": "K06551.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.40563829450848227
+        },
+        {
+          "koi_id": "K04158.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.4069799798785146
+        },
+        {
+          "koi_id": "K02496.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.4099405283637509
+        }
+      ]
+    },
+    {
+      "koi_id": "K04347.01",
+      "host_id": 3244792,
+      "archive_label": "CONFIRMED",
+      "vote": "FALSE POSITIVE",
+      "signal_to_noise": 15.7,
+      "neighbours": [
+        {
+          "koi_id": "K01636.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.3552236279772126
+        },
+        {
+          "koi_id": "K04219.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.43644074756360285
+        },
+        {
+          "koi_id": "K04340.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.4500633193873065
+        },
+        {
+          "koi_id": "K02320.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.46395417805881867
+        },
+        {
+          "koi_id": "K02360.01",
+          "archive_label": "FALSE POSITIVE",
+          "distance": 0.46562634317780327
+        }
+      ]
+    },
+    {
+      "koi_id": "K02621.01",
+      "host_id": 9996632,
+      "archive_label": "FALSE POSITIVE",
+      "vote": "CONFIRMED",
+      "signal_to_noise": 19.0,
+      "neighbours": [
+        {
+          "koi_id": "K01437.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.25437624418151
+        },
+        {
+          "koi_id": "K01440.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.2565175201704172
+        },
+        {
+          "koi_id": "K02163.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.26970722938248004
+        },
+        {
+          "koi_id": "K02129.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.2768374925946188
+        },
+        {
+          "koi_id": "K02507.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.3061882012395656
+        }
+      ]
+    },
+    {
+      "koi_id": "K00516.01",
+      "host_id": 7840044,
+      "archive_label": "FALSE POSITIVE",
+      "vote": "CONFIRMED",
+      "signal_to_noise": 26.4,
+      "neighbours": [
+        {
+          "koi_id": "K02163.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.282319129116208
+        },
+        {
+          "koi_id": "K01530.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.35237556284437305
+        },
+        {
+          "koi_id": "K02002.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.35361543954208113
+        },
+        {
+          "koi_id": "K01441.01",
+          "archive_label": "CONFIRMED",
+          "distance": 0.3659787293184558
+        },
+        {
+          "koi_id": "K01203.02",
+          "archive_label": "CONFIRMED",
+          "distance": 0.38821825810534044
+        }
+      ]
+    }
+  ]
+}

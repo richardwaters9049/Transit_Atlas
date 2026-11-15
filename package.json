@@ -1,0 +1,7 @@
+{
+  "name": "transit-atlas",
+  "private": true,
+  "scripts": {
+    "tauri": "cd desktop && bun run tauri"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "archive": "NASA Exoplanet Archive",
+  "table": "q1_q17_dr24_koi",
+  "release": "Kepler Q1–Q17 DR24",
+  "release_last_updated": "2015-09-24",
+  "retrieved_utc_date": "2026-11-15",
+  "documentation": "https://exoplanetarchive.ipac.caltech.edu/docs/PurposeOfKOITable.html",
+  "tap_endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+  "query": "SELECT kepoi_name,kepid,koi_disposition,koi_period,koi_duration,koi_depth,koi_impact,koi_model_snr,koi_steff,koi_slogg,koi_srad FROM q1_q17_dr24_koi ORDER BY kepoi_name",
+  "format": "csv",
+  "file": "kepler-koi-dr24-2026-11-15.csv",
+  "rows": 7470,
+  "sha256": "6b4fd1fc0be6dbc027f37b90537b146728395cc18f6cf0837ad1843cda6a4ab7"
+}

@@ -1,0 +1,486 @@
+{
+  "snapshot": {
+    "archive": "NASA Exoplanet Archive",
+    "table": "cumulative",
+    "retrieved_utc_date": "2026-11-14",
+    "doi": "10.26133/NEA4",
+    "tap_endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+    "query": "SELECT kepoi_name,kepid,koi_disposition,koi_period,koi_duration,koi_depth,koi_impact,koi_model_snr,koi_steff,koi_slogg,koi_srad FROM cumulative ORDER BY kepoi_name",
+    "format": "csv",
+    "file": "kepler-koi-cumulative-2026-11-14.csv",
+    "rows": 9564,
+    "sha256": "91290c1efd8a7c3a5695cd05494b17c2f6f59a833ebf5ca3167862ddfa35ddc4"
+  },
+  "audit": {
+    "total_rows": 9564,
+    "usable_rows": 9199,
+    "excluded_rows": 365,
+    "by_disposition": {
+      "CANDIDATE": {
+        "usable": 1872,
+        "excluded": 105
+      },
+      "CONFIRMED": {
+        "usable": 2746,
+        "excluded": 2
+      },
+      "FALSE POSITIVE": {
+        "usable": 4581,
+        "excluded": 258
+      }
+    },
+    "feature_exclusions_by_disposition": {
+      "koi_period": {},
+      "koi_duration": {},
+      "koi_depth": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "non_positive_log_input": 1,
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_impact": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_model_snr": {
+        "FALSE POSITIVE": {
+          "missing": 257,
+          "non_positive_log_input": 1
+        },
+        "CANDIDATE": {
+          "non_positive_log_input": 1,
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_steff": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_slogg": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      },
+      "koi_srad": {
+        "FALSE POSITIVE": {
+          "missing": 257
+        },
+        "CANDIDATE": {
+          "missing": 104
+        },
+        "CONFIRMED": {
+          "missing": 2
+        }
+      }
+    }
+  },
+  "labelled_partitions": {
+    "train": {
+      "hosts": 5089,
+      "rows_by_disposition": {
+        "CONFIRMED": 2130,
+        "FALSE POSITIVE": 3653
+      }
+    },
+    "validation": {
+      "hosts": 667,
+      "rows_by_disposition": {
+        "CONFIRMED": 303,
+        "FALSE POSITIVE": 465
+      }
+    },
+    "test": {
+      "hosts": 668,
+      "rows_by_disposition": {
+        "FALSE POSITIVE": 463,
+        "CONFIRMED": 313
+      }
+    }
+  },
+  "training_references": 5783,
+  "eligible_references": 5781,
+  "same_host_references_excluded": [
+    "K00115.01",
+    "K00115.02"
+  ],
+  "features": [
+    {
+      "field": "koi_period",
+      "name": "Orbital period",
+      "unit": "days",
+      "transform": "log10",
+      "training_mean": 0.9622972725715824,
+      "training_scale": 0.7914054757882779,
+      "constant": false
+    },
+    {
+      "field": "koi_duration",
+      "name": "Transit duration",
+      "unit": "hours",
+      "transform": "log10",
+      "training_mean": 0.614861103162024,
+      "training_scale": 0.3291657908210453,
+      "constant": false
+    },
+    {
+      "field": "koi_depth",
+      "name": "Transit depth",
+      "unit": "ppm",
+      "transform": "log10",
+      "training_mean": 2.996296666572526,
+      "training_scale": 1.0826817269801865,
+      "constant": false
+    },
+    {
+      "field": "koi_impact",
+      "name": "Transit impact parameter",
+      "unit": "stellar radii (ratio)",
+      "transform": "identity",
+      "training_mean": 0.7317414836590013,
+      "training_scale": 2.9112405836049033,
+      "constant": false
+    },
+    {
+      "field": "koi_model_snr",
+      "name": "Transit signal-to-noise",
+      "unit": "ratio",
+      "transform": "log10",
+      "training_mean": 1.7117877646732826,
+      "training_scale": 0.7311882340049918,
+      "constant": false
+    },
+    {
+      "field": "koi_steff",
+      "name": "Stellar effective temperature",
+      "unit": "K",
+      "transform": "identity",
+      "training_mean": 5724.739235690818,
+      "training_scale": 807.2475920490559,
+      "constant": false
+    },
+    {
+      "field": "koi_slogg",
+      "name": "Stellar surface gravity",
+      "unit": "log10(cm/s²)",
+      "transform": "identity",
+      "training_mean": 4.320319211481916,
+      "training_scale": 0.41328404017327064,
+      "constant": false
+    },
+    {
+      "field": "koi_srad",
+      "name": "Stellar radius",
+      "unit": "solar radii",
+      "transform": "log10",
+      "training_mean": 0.05258570582886359,
+      "training_scale": 0.2554699241360374,
+      "constant": false
+    }
+  ],
+  "query": {
+    "koi_id": "K00115.03",
+    "host_id": 9579641,
+    "disposition": "CANDIDATE",
+    "measurements": {
+      "koi_period": 3.43591631,
+      "koi_duration": 3.133,
+      "koi_depth": 23.2,
+      "koi_impact": 0.624,
+      "koi_model_snr": 8.7,
+      "koi_steff": 5779.0,
+      "koi_slogg": 4.339,
+      "koi_srad": 1.087
+    }
+  },
+  "neighbours": [
+    {
+      "rank": 1,
+      "koi_id": "K02961.01",
+      "host_id": 10471515,
+      "disposition": "CONFIRMED",
+      "measurements": {
+        "koi_period": 3.7847507,
+        "koi_duration": 2.924,
+        "koi_depth": 33.5,
+        "koi_impact": 0.021,
+        "koi_model_snr": 12.2,
+        "koi_steff": 6017.0,
+        "koi_slogg": 4.326,
+        "koi_srad": 1.206
+      },
+      "distance": 0.4849406163902518,
+      "distance_squared": 0.2351674014249574,
+      "feature_contributions": {
+        "koi_period": {
+          "squared_delta": 0.002815729200204058,
+          "share": 0.011973297247588822
+        },
+        "koi_duration": {
+          "squared_delta": 0.00829700882393247,
+          "share": 0.035281288025713335
+        },
+        "koi_depth": {
+          "squared_delta": 0.02171846573316757,
+          "share": 0.09235321563094277
+        },
+        "koi_impact": {
+          "squared_delta": 0.04290208812622122,
+          "share": 0.18243212225105698
+        },
+        "koi_model_snr": {
+          "squared_delta": 0.04033051636024054,
+          "share": 0.1714970532304416
+        },
+        "koi_steff": {
+          "squared_delta": 0.08692413901000742,
+          "share": 0.3696266509869361
+        },
+        "koi_slogg": {
+          "squared_delta": 0.0009894399366963417,
+          "share": 0.00420738559299034
+        },
+        "koi_srad": {
+          "squared_delta": 0.031190014234487785,
+          "share": 0.13262898703433013
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "koi_id": "K03172.02",
+      "host_id": 3337061,
+      "disposition": "FALSE POSITIVE",
+      "measurements": {
+        "koi_period": 6.5588346,
+        "koi_duration": 3.034,
+        "koi_depth": 41.2,
+        "koi_impact": 0.7173,
+        "koi_model_snr": 8.1,
+        "koi_steff": 5780.0,
+        "koi_slogg": 4.438,
+        "koi_srad": 1.0
+      },
+      "distance": 0.5109423250571544,
+      "distance_squared": 0.2610620595348109,
+      "feature_contributions": {
+        "koi_period": {
+          "squared_delta": 0.12587715747329434,
+          "share": 0.48217331042893063
+        },
+        "koi_duration": {
+          "squared_delta": 0.0017947185008903152,
+          "share": 0.00687468146113741
+        },
+        "koi_depth": {
+          "squared_delta": 0.053066865155180956,
+          "share": 0.20327298899633803
+        },
+        "koi_impact": {
+          "squared_delta": 0.0010270866725220285,
+          "share": 0.003934262505827942
+        },
+        "koi_model_snr": {
+          "squared_delta": 0.0018014560244760077,
+          "share": 0.006900489591195443
+        },
+        "koi_steff": {
+          "squared_delta": 1.5345692219830448e-06,
+          "share": 5.878177873558146e-06
+        },
+        "koi_slogg": {
+          "squared_delta": 0.057381661654198404,
+          "share": 0.21980084642114356
+        },
+        "koi_srad": {
+          "squared_delta": 0.02011157948502686,
+          "share": 0.07703754241755346
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "koi_id": "K06871.01",
+      "host_id": 7376982,
+      "disposition": "FALSE POSITIVE",
+      "measurements": {
+        "koi_period": 2.31610674,
+        "koi_duration": 3.347,
+        "koi_depth": 33.6,
+        "koi_impact": 0.404,
+        "koi_model_snr": 13.0,
+        "koi_steff": 6025.0,
+        "koi_slogg": 4.3,
+        "koi_srad": 1.193
+      },
+      "distance": 0.5156771000994272,
+      "distance_squared": 0.26592287156695465,
+      "feature_contributions": {
+        "koi_period": {
+          "squared_delta": 0.04684201025135716,
+          "share": 0.1761488584089811
+        },
+        "koi_duration": {
+          "squared_delta": 0.007599634051312118,
+          "share": 0.028578339300155554
+        },
+        "koi_depth": {
+          "squared_delta": 0.022072295202247082,
+          "share": 0.08300262054251197
+        },
+        "koi_impact": {
+          "squared_delta": 0.0057106976595989265,
+          "share": 0.021475015014498573
+        },
+        "koi_model_snr": {
+          "squared_delta": 0.056905545571018006,
+          "share": 0.21399267101660416
+        },
+        "koi_steff": {
+          "squared_delta": 0.09286599103752577,
+          "share": 0.34922152611511553
+        },
+        "koi_slogg": {
+          "squared_delta": 0.008904959430266262,
+          "share": 0.03348700086530222
+        },
+        "koi_srad": {
+          "squared_delta": 0.02502173836362932,
+          "share": 0.09409396873683086
+        }
+      }
+    },
+    {
+      "rank": 4,
+      "koi_id": "K02636.01",
+      "host_id": 6198182,
+      "disposition": "CONFIRMED",
+      "measurements": {
+        "koi_period": 3.88148385,
+        "koi_duration": 2.679,
+        "koi_depth": 36.3,
+        "koi_impact": 0.252,
+        "koi_model_snr": 11.9,
+        "koi_steff": 5854.0,
+        "koi_slogg": 4.469,
+        "koi_srad": 0.979
+      },
+      "distance": 0.5191765499120565,
+      "distance_squared": 0.26954428997858615,
+      "feature_contributions": {
+        "koi_period": {
+          "squared_delta": 0.004477331288711071,
+          "share": 0.016610744338404537
+        },
+        "koi_duration": {
+          "squared_delta": 0.04266100394537925,
+          "share": 0.1582708502145174
+        },
+        "koi_depth": {
+          "squared_delta": 0.03224587664417797,
+          "share": 0.11963108788815274
+        },
+        "koi_impact": {
+          "squared_delta": 0.016327875721610294,
+          "share": 0.06057585461338267
+        },
+        "koi_model_snr": {
+          "squared_delta": 0.03460958385014124,
+          "share": 0.12840035992931176
+        },
+        "koi_steff": {
+          "squared_delta": 0.00863195187365461,
+          "share": 0.032024243119156304
+        },
+        "koi_slogg": {
+          "squared_delta": 0.09894399366962196,
+          "share": 0.3670787968740964
+        },
+        "koi_srad": {
+          "squared_delta": 0.03164667298528976,
+          "share": 0.11740806302297822
+        }
+      }
+    },
+    {
+      "rank": 5,
+      "koi_id": "K07709.01",
+      "host_id": 4840156,
+      "disposition": "FALSE POSITIVE",
+      "measurements": {
+        "koi_period": 2.69487041,
+        "koi_duration": 2.553,
+        "koi_depth": 62.1,
+        "koi_impact": 0.554,
+        "koi_model_snr": 10.3,
+        "koi_steff": 5823.0,
+        "koi_slogg": 4.283,
+        "koi_srad": 1.187
+      },
+      "distance": 0.5486905254198077,
+      "distance_squared": 0.30106129268546455,
+      "feature_contributions": {
+        "koi_period": {
+          "squared_delta": 0.01777237382039169,
+          "share": 0.05903241051635115
+        },
+        "koi_duration": {
+          "squared_delta": 0.07295712811981586,
+          "share": 0.2423331391061229
+        },
+        "koi_depth": {
+          "squared_delta": 0.15598438421677313,
+          "share": 0.5181150417092598
+        },
+        "koi_impact": {
+          "squared_delta": 0.0005781491432238578,
+          "share": 0.0019203702278256087
+        },
+        "koi_model_snr": {
+          "squared_delta": 0.010054546799452406,
+          "share": 0.03339700932579516
+        },
+        "koi_steff": {
+          "squared_delta": 0.0029709260137591688,
+          "share": 0.009868176633596867
+        },
+        "koi_slogg": {
+          "squared_delta": 0.018360258233605656,
+          "share": 0.06098511724915643
+        },
+        "koi_srad": {
+          "squared_delta": 0.022383526338442806,
+          "share": 0.0743487352318922
+        }
+      }
+    }
+  ]
+}

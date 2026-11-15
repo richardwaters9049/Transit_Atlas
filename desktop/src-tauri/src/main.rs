@@ -1,0 +1,62 @@
+use atlas_core::Atlas;
+use serde_json::Value;
+use tauri::{Manager, State};
+
+mod study_files;
+
+#[tauri::command]
+fn catalogue(state: State<'_, Atlas>) -> Result<Value, String> {
+    serde_json::to_value(state.catalogue()).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn neighbours(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
+    serde_json::to_value(state.lookup(&query_id)?).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn compare_release(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
+    let result = state.compare_release(&query_id)?;
+    if std::env::var("TRANSIT_ATLAS_TRACE").as_deref() == Ok("1") {
+        println!(
+            "[Transit Atlas] {query_id} · DR24 {} → cumulative {} · {}/5 shared · 8D shift {:.4}",
+            result.earlier_nearest,
+            result.current_nearest,
+            result.retained_neighbours,
+            result.standardised_shift,
+        );
+    }
+    serde_json::to_value(result).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+async fn stability(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
+    let report = state.stability(&query_id)?;
+    if std::env::var("TRANSIT_ATLAS_TRACE").as_deref() == Ok("1") {
+        println!(
+            "[Transit Atlas] {} · {} scenarios × {} references · same nearest {}/{} · same top five {}/{}",
+            report.query, report.trials, report.eligible_references,
+            report.same_first, report.trials, report.same_top_five, report.trials,
+        );
+    }
+    serde_json::to_value(report).map_err(|error| error.to_string())
+}
+
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .setup(|app| {
+            app.manage(Atlas::load()?);
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            catalogue,
+            neighbours,
+            stability,
+            compare_release,
+            study_files::save_study,
+            study_files::open_study
+        ])
+        .run(tauri::generate_context!())
+        .expect("could not start Transit Atlas");
+}
