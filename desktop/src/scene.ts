@@ -64,6 +64,7 @@ export class SignalScene {
     this.controls.dampingFactor = 0.14;
     this.controls.maxDistance = 110;
     this.controls.addEventListener("change", this.requestFrame);
+    this.renderer.domElement.addEventListener("wheel", this.scrollZoom, { capture: true, passive: false });
     this.scene.add(this.content, this.studyLayers, this.selectionLines);
     this.frameView();
     new ResizeObserver(() => this.resize()).observe(this.mount);
@@ -265,6 +266,21 @@ export class SignalScene {
     container.append(element);
     return { element, position: new THREE.Vector3(...position), compact };
   }
+
+  private scrollZoom = (event: WheelEvent): void => {
+    // Let OrbitControls handle pinch events and scroll during a pointer gesture.
+    if (event.ctrlKey || !this.controls.enabled || !this.controls.enableZoom || this.gesturePointers.size) return;
+    const { deltaMode, deltaY } = event;
+    if (!deltaY) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const pixelsPerUnit = deltaMode === WheelEvent.DOM_DELTA_LINE ? 16
+      : deltaMode === WheelEvent.DOM_DELTA_PAGE ? 100 : 1;
+    const scale = 0.95 ** (this.controls.zoomSpeed * Math.abs(deltaY) * pixelsPerUnit / 100);
+    if (deltaY < 0) this.controls.dollyOut(scale);
+    else this.controls.dollyIn(scale);
+  };
 
   private bindPicking(): void {
     const canvas = this.renderer.domElement;

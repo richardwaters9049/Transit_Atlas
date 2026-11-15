@@ -480,7 +480,7 @@ function showAudit(data: AuditData, filter: AuditFilter) {
   auditInspector.open = true;
   byId<HTMLButtonElement>("audit-example").disabled = !data.strongestMismatch;
   byId("audit-overview").textContent = `${number.format(visible)} of ${number.format(report.candidates.length)} shown · Nearest neighbour changes for ${number.format(report.changed_nearest)} across the catalogue`;
-  byId("controls").textContent = "Drag to orbit · Scroll to zoom · Select a candidate";
+  byId("controls").textContent = "Drag to orbit · Select a candidate";
   projectedLines.textContent = "Gold numbers show 8D ranks. Cyan P markers appear only in the 3D top five.";
   drawLegend([
     ...groups.map(([, group]): [string, string] => [group.label, group.colour]),
@@ -592,8 +592,8 @@ function setExample(value: boolean) {
   plotTitle.textContent = value ? "Where the projection loses detail" : "Kepler signals";
   byId("results-title").textContent = value ? "Full and projected distances" : "Nearest neighbours";
   if (scene) byId("controls").textContent = value
-    ? "Drag to orbit · Scroll to zoom"
-    : "Drag to orbit · Scroll to zoom · Click a candidate";
+    ? "Drag to orbit"
+    : "Drag to orbit · Click a candidate";
   if (value) {
     drawExample();
   } else {
@@ -785,7 +785,7 @@ async function start(opening: ReturnType<typeof showOpening>) {
   query.disabled = submit.disabled = exampleButton.disabled = false;
   reset.disabled = !scene;
   expandButton.disabled = !scene;
-  byId("pinch-hint").hidden = !scene;
+  byId("zoom-hint").hidden = !scene;
   query.value = initialQuery;
   await runLookup(initialQuery, demoRelease, firstLookup);
   if (!demoRelease && import.meta.env.DEV && import.meta.env.VITE_TRANSIT_ATLAS_SHOW_STABILITY === "1") {

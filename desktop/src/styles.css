@@ -183,7 +183,10 @@ button.quiet, .search-fields button, .rank { transition: background-color 140ms,
   background: #101419f2; transform: translate(-50%, -50%); font-size: 10px;
 }
 .focus-neighbours { position: absolute; right: 12px; top: 12px; }
-.viewport-controls { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.viewport-controls { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: end; gap: 6px; }
+.zoom-hint { display: grid; gap: 2px; text-transform: none; letter-spacing: normal; }
+.zoom-hint > span { display: flex; align-items: center; gap: 6px; }
+.zoom-hint [aria-hidden] { width: 1em; text-align: center; font-size: 13px; line-height: 1; }
 .plot-footer { display: grid; gap: 4px; padding: 13px 16px; }
 .scenario-controls {
   display: grid; grid-template-columns: auto auto minmax(80px, 1fr); align-items: center; gap: 7px 12px;

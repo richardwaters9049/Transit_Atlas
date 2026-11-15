@@ -99,13 +99,16 @@
               <div class="plot-overlay" id="point-markers" aria-hidden="true"></div>
               <button class="quiet focus-neighbours" id="focus-neighbours" type="button" data-arrival="5" aria-pressed="false" hidden>Focus on neighbours</button>
               <div class="viewport-controls" data-arrival="5">
-                <span class="quiet" id="pinch-hint" hidden>Pinch to zoom</span>
+                <div class="quiet zoom-hint" id="zoom-hint" hidden>
+                  <span><span aria-hidden="true">↑</span>Scroll up to zoom out</span>
+                  <span><span aria-hidden="true">↓</span>Scroll down to zoom in</span>
+                </div>
                 <button class="quiet" id="reset" type="button" disabled>Reset view</button>
               </div>
             </div>
             <div class="plot-footer" data-arrival="6">
               <p class="plot-caption" id="projected-lines" hidden>Lines connect projected positions of neighbours ranked in 8D.</p>
-              <p id="controls">Drag to orbit · Scroll to zoom · Click a candidate</p>
+              <p id="controls">Drag to orbit · Click a candidate</p>
             </div>
           </section>
           <section class="results-panel" aria-labelledby="results-title" data-arrival="2">

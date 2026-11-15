@@ -19,7 +19,7 @@ The app preloads the catalogue and the first ranking during a 5.4-second orbital
 
 ## Explore the catalogue
 
-Search by Kepler Object of Interest (KOI) ID or click a candidate in the plot. Drag to orbit, pinch or scroll to zoom, and select **Focus on neighbours** to frame the query and its five nearest matches. Click a ranked neighbour to open its distance breakdown. **Expand 3D** opens the live scene in a full-window view and preserves the camera when you return.
+Search by Kepler Object of Interest (KOI) ID or click a candidate in the plot. Drag to orbit. Scroll up to zoom out or down to zoom in. Select **Focus on neighbours** to frame the query and its five nearest matches. Click a ranked neighbour to open its distance breakdown. **Expand 3D** opens the live scene in a full-window view and preserves the camera when you return.
 
 The three displayed principal components retain 70.0% of training variance. Rust ranks neighbours using all eight standardised measurements and excludes signals that share the query’s star. Open **3D ranking example** for a small demonstration of how the ranking changes when dimensions are dropped. Archive labels describe the catalogue’s dispositions. Planet confirmation requires independent evidence. [Data and methods](docs/methods.md)
 
