@@ -20,9 +20,13 @@ Transit Atlas is a local Kepler signal explorer. Keep the app focused on inspect
 - Treat the three-component PCA as display geometry. Use Rust’s ranked IDs for highlights and show the retained variance.
 - Keep the original measurements and units available in the distance breakdown. Reconcile each squared distance with its eight feature contributions.
 - Document the extraction query, version and SHA-256 for any new snapshot. Regenerate the desktop export through `reference/export_desktop.py` when the snapshot or feature definition changes. Keep GUI builds offline at runtime.
+- Keep KOI signal identity separate from KIC host identity. Validate the KOI-to-KIC mapping and the period/duration against the pinned catalogue before importing a light curve; record the signal-specific epoch and its source in BKJD.
+- Phase-fold only timestamps in the declared BKJD system. Preserve source FITS bytes and every original cadence/quality flag; record the exact flux column, Lightkurve version, quality bitmask, per-product normalisation and SHA-256 used to derive the plotted series.
+- Keep each quarter/product normalised independently. Do not add detrending, quarter stitching or transit fitting without separately named settings, documentation and reference tests.
+- Keep offline replay tests for every pinned FITS example: verify its SHA-256, re-read the source, recompute the phase-folded points and compare them with the saved JSON document.
 
 ## Before handing off
 
 Run the project's checks in the existing iTerm tab at the project root so the output is visible.
 
-From the project root, run `python -m unittest discover -s reference -v` and `cargo test -p atlas-core --locked`. From `desktop/`, install the locked dependencies and run `bun run build`. Verify the default KOI, a second candidate and the teaching projection when changing the desktop workflow. Record only observed completion and evidence in the Transit Atlas project tracker.
+From the project root, run `python -m unittest discover -s reference -v` and `cargo test -p atlas-core --locked`. For the light-curve milestone, also verify KOI/KIC mismatch rejection and strict JSON export before checking a real FITS product. From `desktop/`, install the locked dependencies and run `bun run build`. Verify the default KOI, a second candidate and the teaching projection when changing the desktop workflow. Record only observed completion and evidence in the Transit Atlas project tracker.

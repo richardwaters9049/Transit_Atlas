@@ -81,12 +81,32 @@ print(winner["koi_id"])
 
 The desktop shows the measurement ranges and the witness ranking side by side. A saved study stores both positions, the range digest and the checked evidence, and reruns the calculation on open. The Rust tests compare the corner method with exhaustive enumeration and exercise an equal-distance boundary, fixed coordinates and a real logarithmic boundary. A future evaluation can measure how often the 64 scenarios miss a change across the catalogue and assess the role of measurement covariance. [Current sensitivity method](mathematics.md#measurement-sensitivity)
 
-## Second milestone · replay the observational evidence
+## Second milestone · replay the observational evidence (in progress)
 
 1. Match each selected KOI to the correct archive product. Where a Data Validation file contains several signals for one host, require an explicit Threshold Crossing Event mapping. Preserve the original time system, flux units, quality flags and source metadata.
 2. Display the folded light curve and individual transit windows for the candidate and a selected reference. Reuse established FITS and light-curve tooling. Record the flux column, ephemeris and any quality mask or detrending settings. Cross-check reference outputs in a Lightkurve notebook.
 3. Compare a documented baseline with one alternative processing choice or a leave-one-quarter-out run. Show the measurements and rank changes alongside the flux comparison. When inputs are insufficient, report which calculation is unavailable.
 4. Export the source manifest, settings, relevant numerical series and rank evidence so collaborators can inspect the figures and regenerate them.
+
+### Implementation status · 15 November 2026
+
+The first implementation slice now covers archive ingestion, reproducible phase folding and the desktop inspector. The plots have been reviewed in the running macOS app, including the candidate/reference comparison; the user also checked the app at multiple window sizes. The remaining milestone work is study-file persistence and carefully pinned additional observations:
+
+- [x] Add a versioned `transit-atlas.kepler-lightcurve` JSON contract with the KOI, KIC, ephemeris, MAST product identity, FITS checksum, source cadence arrays and derived folded series.
+- [x] Add a Lightkurve FITS reader that preserves all cadences and quality flags before applying a recorded mask.
+- [x] Implement deterministic phase folding, per-product median normalisation, uncertainty propagation and cadence accounting.
+- [x] Add a public MAST AWS mirror download path and an offline FITS import path.
+- [x] Validate KOI role, KIC host, period and duration against the pinned catalogue/ephemeris, and validate FITS host, quarter, data release, BKJD format and TDB time scale.
+- [x] Document the time system, equations, quality-mask rule, units, provenance and current limitations in [light-curves.md](light-curves.md).
+- [x] Verify the importer against two real MAST public AWS mirror FITS products: Q4 long-cadence DR25 files for K00115.03 (KIC 9579641) and K02961.01 (KIC 10471515). Both original FITS files are pinned under data/raw/kepler-lightcurves/.
+- [x] Pin the two signal ephemerides from the NASA Exoplanet Archive cumulative table, including period, epoch and duration uncertainties, in data/raw/kepler-lightcurve-ephemerides-2026-11-15.json.
+- [x] Generate versioned offline JSON documents under data/generated/lightcurves/. Each product contains 4,159 source cadences; 4,108 remain after the declared quality and finite-value checks.
+- [x] Add an offline replay test that re-reads each pinned FITS file, recalculates the folded series and compares every point with the saved document.
+- [x] Add a desktop inspector panel that loads the bundled candidate and selected reference, and draws their independently folded Q4 series.
+- [x] Launch the desktop app and visually review the two curves, chart scaling and narrow transit-duration window. The candidate and reference plots were inspected in the native macOS app; the user also checked the application at multiple window sizes.
+- [ ] Add a study-file extension that records the selected light-curve product and processing fingerprint alongside the existing ranking evidence.
+
+The importer has been exercised through the public MAST AWS mirror for both pinned products. The Python suite now has 28 passing tests, including checksum verification and offline recomputation of every folded point from each original FITS file. The desktop plots have been visually reviewed, and a screenshot of the candidate/reference inspector is included in the README. Persistence of the selected light-curve provenance in study files remains open.
 
 [Kepler cadence and quality flags](https://lightkurve.github.io/lightkurve/tutorials/2-creating-light-curves/2-2-kepler-noise-1-data-gaps-and-quality-flags.html) · [Lightkurve documentation](https://lightkurve.github.io/lightkurve/)
 

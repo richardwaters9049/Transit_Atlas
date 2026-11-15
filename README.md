@@ -13,6 +13,7 @@ The projection audit found **601 of 1,872 candidates** whose five closest refere
   - [Check exact rank sensitivity](#check-exact-rank-sensitivity)
   - [Compare catalogue releases](#compare-catalogue-releases)
   - [Save and replay a study](#save-and-replay-a-study)
+  - [Inspect archived light curves](#inspect-archived-light-curves)
 - [Opening and walkthrough](#opening-and-walkthrough)
 - [Verify the calculations](#verify-the-calculations)
 - [Technical documentation](#technical-documentation)
@@ -71,6 +72,16 @@ Search for `K00005.01` and select **Compare releases**. Switch between **DR24** 
 
 **Save study…** records the candidate, selected neighbour, active scenario, exact-bound result, release or projection filter, and camera in a portable `.atlas.json` file. The file includes the projected positions and eight-dimensional distance contributions. **Open study…** verifies the data fingerprints and recalculates the evidence before restoring the view.
 
+A replayable exact-rank example is included at [`data/studies/2026-11-15-K00100-exact-witness.atlas.json`](data/studies/2026-11-15-K00100-exact-witness.atlas.json). It opens on `K00100.01` with the witness for `K00121.01` selected. Save your own investigations in `data/studies/` or another location of your choice.
+
+### Inspect archived light curves
+
+Search for K00115.03. The inspector includes phase-folded Kepler Q4 observations for the candidate and its nominal nearest reference, K02961.01. Each series is folded around its own NASA Exoplanet Archive ephemeris. The display uses median-normalised PDCSAP flux in ppm and marks the catalogue transit duration.
+
+The original DR25 FITS products, ephemeris snapshot, product URIs, SHA-256 checksums and derived cadence arrays are stored with the project. The plotted documents can be replayed offline and are checked against their original FITS files by the Python test suite. [Light-curve mathematics and provenance](docs/light-curves.md)
+
+![Transit Atlas showing the independently phase-folded candidate and reference Kepler Q4 light curves, with cadence counts and product checksums](docs/screenshots/light-curves.png)
+
 ## Opening and walkthrough
 
 ![Transit Atlas orbital opening with the wordmark, planet and satellite orbit](docs/screenshots/orbital-opening.png)
@@ -94,14 +105,24 @@ cargo test -p atlas-core --locked
 
 For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core --example stability -- K00115.03 K00005.01`. Launch with `TRANSIT_ATLAS_TRACE=1 bun run tauri dev` to print a summary when the app checks sampled or exact uncertainty, compares releases or audits the projection.
 
+To rebuild the pinned Kepler Q4 examples, run these from the repository root:
+
+```bash
+python reference/import_kepler_lightcurve.py --koi-id K00115.03 --role candidate --quarter 4 --overwrite
+python reference/import_kepler_lightcurve.py --koi-id K02961.01 --role reference --quarter 4 --overwrite
+```
+
+The importer uses the committed NASA Exoplanet Archive ephemeris snapshot and MAST's public AWS mirror. Pass --fits /path/to/product_llc.fits to use a previously downloaded FITS file instead.
+
 The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation stars. It agreed with 704 of 776 usable held-out archive labels (90.7%), compared with 59.7% for the training majority baseline. The majority baseline had higher raw agreement at signal-to-noise ratios below 10. [Evaluation protocol and failure cases](docs/evaluation.md)
 
 ## Technical documentation
 
 - [Mathematics](docs/mathematics.md) derives the metric and projection, walks through a real Kepler comparison and explains what each sensitivity calculation measures.
 - [Data and methods](docs/methods.md) records catalogue coverage, feature definitions and the projection audit.
+- [Kepler light curves](docs/light-curves.md) defines the KOI-to-KIC mapping, BKJD phase folding, flux normalisation, quality filtering and provenance contract.
 - [Held-out evaluation](docs/evaluation.md) describes the host-based protocol, baselines and failure cases.
-- [Research roadmap](docs/research-roadmap.md) derives the exact check, reproduces a ranking-change witness and proposes linking rankings to archived light curves.
+- [Research roadmap](docs/research-roadmap.md) derives the exact check, reproduces a ranking-change witness and tracks the archived-observation integration.
 
 ## Project layout
 
@@ -110,10 +131,11 @@ The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation 
 | `crates/atlas-core/` | Rust scaling, neighbour search, sampled and exact uncertainty, release comparison and parity tests |
 | `desktop/src/` | TypeScript workspace, Three.js scenes and Motion transitions |
 | `desktop/src-tauri/` | Tauri window, Rust commands and study file handling |
-| `reference/` | Python reference, automated tests, evaluation and data exporters |
-| `data/raw/` | Pinned NASA extracts, queries and checksum manifests |
-| `data/generated/` | Catalogue and comparison data bundled with the app |
+| `reference/` | Python reference, automated tests, evaluation, FITS ingestion and phase-fold calculations |
+| `data/raw/` | Pinned NASA extracts, ephemerides, original Kepler FITS products and checksums |
+| `data/generated/` | Catalogue, comparison data and reproducible folded light-curve documents bundled with the app |
+| `data/studies/` | Portable `.atlas.json` example investigations that can be reopened in the app |
 | `data/fixtures/`, `data/evaluation/` | Verified lookup fixture and held-out results |
-| `docs/` | Mathematics, scientific methods, evaluation, research roadmap and media |
+| `docs/` | Mathematics, scientific methods, light-curve calculations, evaluation, research roadmap and media |
 
 The pinned cumulative table contains 9,564 Kepler signals. Of these, 9,199 have usable values for all eight measurements, including 1,872 candidates. The [snapshot manifest](data/raw/kepler-koi-cumulative-2026-11-14.json) records the query, retrieval date and SHA-256 checksum. [NASA Exoplanet Archive cumulative catalogue](https://doi.org/10.26133/NEA4)

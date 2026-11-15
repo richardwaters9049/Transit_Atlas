@@ -1,5 +1,5 @@
-import { dispositionColours, dispositionLabels, getCatalogue, getExactSensitivity, getNeighbours, getProjectionAudit, getReleaseComparison, getStability } from "./model";
-import type { CandidateAudit, Catalogue, Disposition, ExactSensitivity, Lookup, Neighbour, Observation, Position, ProjectionAudit, ReleaseComparison, Stability } from "./model";
+import { dispositionColours, dispositionLabels, getCatalogue, getExactSensitivity, getLightCurve, getNeighbours, getProjectionAudit, getReleaseComparison, getStability } from "./model";
+import type { CandidateAudit, Catalogue, Disposition, ExactSensitivity, LightCurveDocument, Lookup, Neighbour, Observation, Position, ProjectionAudit, ReleaseComparison, Stability } from "./model";
 import { auditGroup, auditGroups, auditTable, readAuditFilter, type AuditFilter } from "./projection-audit";
 import { exactDescription, exactMeasurements } from "./exact-view";
 import { releaseMeasurements } from "./release-view";
@@ -48,12 +48,22 @@ const detailSection = byId<HTMLDetailsElement>("detail-section");
 const rankingSection = byId<HTMLDetailsElement>("ranking-section");
 const jumpRanking = byId<HTMLButtonElement>("jump-ranking");
 const jumpDistance = byId<HTMLButtonElement>("jump-distance");
+const jumpLightCurve = byId<HTMLButtonElement>("jump-lightcurve");
 const releaseButton = byId<HTMLButtonElement>("compare-release");
 const releaseEarlier = byId<HTMLButtonElement>("release-dr24");
 const releaseCurrent = byId<HTMLButtonElement>("release-current");
 const releaseControls = byId("release-controls");
 const releaseFallback = byId("release-fallback");
 const releaseInspector = byId("release-inspector");
+const lightCurveSection = byId<HTMLDetailsElement>("lightcurve-section");
+const lightCurveStatus = byId("lightcurve-status");
+const lightCurveCandidateCanvas = byId<HTMLCanvasElement>("lightcurve-candidate");
+const lightCurveReferenceCanvas = byId<HTMLCanvasElement>("lightcurve-reference");
+const lightCurveCandidateLabel = byId("lightcurve-candidate-label");
+const lightCurveReferenceLabel = byId("lightcurve-reference-label");
+const lightCurveCandidateMeta = byId("lightcurve-candidate-meta");
+const lightCurveReferenceMeta = byId("lightcurve-reference-meta");
+const lightCurveProvenance = byId("lightcurve-provenance");
 const auditButton = byId<HTMLButtonElement>("audit-projection");
 const auditControls = byId("audit-controls");
 const auditInspector = byId<HTMLDetailsElement>("audit-inspector");
@@ -99,6 +109,8 @@ let auditData: AuditData | undefined;
 let auditRequest: symbol | undefined;
 let auditPromise: Promise<AuditData> | undefined;
 let auditFilter: AuditFilter = "all";
+let lightCurveRequest = 0;
+const lightCurveCache = new Map<string, Promise<LightCurveDocument>>();
 let latestRequest = 0;
 let fileBusy = false;
 
@@ -121,6 +133,190 @@ function drawLegend(entries: [string, string][]) {
     item.append(swatch, document.createTextNode(label));
     return item;
   }));
+}
+
+function loadLightCurve(koiId: string) {
+  let pending = lightCurveCache.get(koiId);
+  if (!pending) {
+    pending = getLightCurve(koiId, 4);
+    lightCurveCache.set(koiId, pending);
+  }
+  return pending;
+}
+
+function percentile(values: number[], fraction: number) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * fraction)))];
+}
+
+function drawLightCurveUnavailable(canvas: HTMLCanvasElement, message: string) {
+  const width = Math.max(300, Math.floor(canvas.getBoundingClientRect().width));
+  const height = 164;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  canvas.style.height = height + "px";
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.scale(ratio, ratio);
+  context.fillStyle = "#101419";
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = "#aeb6bf";
+  context.font = "11px IBM Plex Mono, monospace";
+  context.fillText(message, 12, 25, width - 24);
+}
+
+function drawLightCurve(canvas: HTMLCanvasElement, document: LightCurveDocument, colour: string) {
+  const width = Math.max(300, Math.floor(canvas.getBoundingClientRect().width));
+  const height = 164;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  canvas.style.height = height + "px";
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.scale(ratio, ratio);
+
+  const left = 43;
+  const right = width - 9;
+  const top = 9;
+  const bottom = height - 26;
+  const plotWidth = right - left;
+  const plotHeight = bottom - top;
+  const period = document.ephemeris.period_days;
+  const xMin = -period / 2;
+  const xMax = period / 2;
+  const points = document.folded.points.filter((point) =>
+    Number.isFinite(point.phase_days) && Number.isFinite(point.relative_flux_ppm));
+  const flux = points.map((point) => point.relative_flux_ppm);
+  let yMin = Math.min(0, percentile(flux, 0.02));
+  let yMax = Math.max(0, percentile(flux, 0.98));
+  if (!Number.isFinite(yMin) || !Number.isFinite(yMax) || yMax - yMin < 1) {
+    yMin = -1;
+    yMax = 1;
+  }
+  const padding = (yMax - yMin) * 0.1;
+  yMin -= padding;
+  yMax += padding;
+
+  const x = (value: number) => left + ((value - xMin) / (xMax - xMin)) * plotWidth;
+  const y = (value: number) => bottom - ((value - yMin) / (yMax - yMin)) * plotHeight;
+
+  context.fillStyle = "#101419";
+  context.fillRect(0, 0, width, height);
+
+  const halfTransitDays = document.ephemeris.duration_hours / 48;
+  context.fillStyle = "rgba(255, 220, 157, 0.08)";
+  context.fillRect(x(-halfTransitDays), top, x(halfTransitDays) - x(-halfTransitDays), plotHeight);
+
+  context.strokeStyle = "#2f353c";
+  context.lineWidth = 1;
+  context.font = "9px IBM Plex Mono, monospace";
+  context.fillStyle = "#aeb6bf";
+  for (let index = 0; index <= 4; index += 1) {
+    const value = yMin + ((yMax - yMin) * index) / 4;
+    const lineY = y(value);
+    context.beginPath();
+    context.moveTo(left, lineY);
+    context.lineTo(right, lineY);
+    context.stroke();
+    context.textAlign = "right";
+    context.fillText(Math.round(value).toString(), left - 6, lineY + 3);
+  }
+
+  context.setLineDash([3, 3]);
+  context.strokeStyle = "#ffdc9d";
+  context.beginPath();
+  context.moveTo(x(0), top);
+  context.lineTo(x(0), bottom);
+  context.stroke();
+  context.setLineDash([]);
+
+  context.fillStyle = colour;
+  context.globalAlpha = 0.68;
+  for (const point of points) {
+    context.fillRect(x(point.phase_days) - 0.7, y(point.relative_flux_ppm) - 0.7, 1.4, 1.4);
+  }
+  context.globalAlpha = 1;
+
+  context.strokeStyle = "#87919c";
+  context.beginPath();
+  context.moveTo(left, top);
+  context.lineTo(left, bottom);
+  context.lineTo(right, bottom);
+  context.stroke();
+
+  context.fillStyle = "#aeb6bf";
+  context.textAlign = "center";
+  context.fillText("−" + (period / 2).toFixed(2), left, height - 8);
+  context.fillText("0", x(0), height - 8);
+  context.fillText("+" + (period / 2).toFixed(2), right, height - 8);
+}
+
+function lightCurveMeta(document: LightCurveDocument) {
+  const ephemeris = document.ephemeris;
+  return "P " + ephemeris.period_days.toFixed(4) + " d · T₀ " +
+    ephemeris.epoch_bkjd.toFixed(4) + " BKJD · D " +
+    ephemeris.duration_hours.toFixed(3) + " h · " +
+    number.format(document.folded.cadences_used) + "/" +
+    number.format(document.folded.cadences_total) + " cadences";
+}
+
+async function drawLightCurves(result: Lookup, selected: Neighbour) {
+  const request = ++lightCurveRequest;
+  if (result.query.koi_id !== "K00115.03") {
+    lightCurveSection.hidden = true;
+    jumpLightCurve.disabled = true;
+    return;
+  }
+
+  lightCurveSection.hidden = false;
+  jumpLightCurve.disabled = false;
+  lightCurveStatus.textContent = "Loading the pinned Q4 observations…";
+  lightCurveCandidateLabel.textContent = "Candidate · " + result.query.koi_id;
+  lightCurveReferenceLabel.textContent = "Reference · " + selected.observation.koi_id;
+  lightCurveCandidateMeta.textContent = "";
+  lightCurveReferenceMeta.textContent = "";
+  lightCurveProvenance.textContent = "";
+
+  let candidate: LightCurveDocument | undefined;
+  let reference: LightCurveDocument | undefined;
+  try {
+    candidate = await loadLightCurve(result.query.koi_id);
+    if (request !== lightCurveRequest) return;
+    drawLightCurve(lightCurveCandidateCanvas, candidate, "#b4a4ff");
+    lightCurveCandidateMeta.textContent = lightCurveMeta(candidate);
+  } catch (problem) {
+    if (request !== lightCurveRequest) return;
+    drawLightCurveUnavailable(lightCurveCandidateCanvas, "No bundled candidate FITS product.");
+    lightCurveCandidateMeta.textContent = String(problem);
+  }
+
+  try {
+    reference = await loadLightCurve(selected.observation.koi_id);
+    if (request !== lightCurveRequest) return;
+    drawLightCurve(lightCurveReferenceCanvas, reference, "#47d5bf");
+    lightCurveReferenceMeta.textContent = lightCurveMeta(reference);
+  } catch {
+    if (request !== lightCurveRequest) return;
+    drawLightCurveUnavailable(
+      lightCurveReferenceCanvas,
+      "No bundled Q4 product for " + selected.observation.koi_id + ".",
+    );
+    lightCurveReferenceMeta.textContent = "Select K02961.01 to inspect the archived reference curve.";
+  }
+
+  if (request !== lightCurveRequest) return;
+  lightCurveStatus.textContent = reference
+    ? "Each curve is folded around its own KOI epoch. PDCSAP flux is normalised to the product median and shown in ppm; the shaded band is the catalogue transit duration."
+    : "Candidate observations are available. The selected reference " +
+      selected.observation.koi_id + " has not been imported.";
+  lightCurveProvenance.textContent = [
+    candidate && ("Candidate: " + candidate.source.product_filename +
+      " · SHA-256 " + candidate.source.sha256.slice(0, 16) + "…"),
+    reference && ("Reference: " + reference.source.product_filename +
+      " · SHA-256 " + reference.source.sha256.slice(0, 16) + "…"),
+  ].filter(Boolean).join(" · ");
 }
 
 function drawCatalogue() {
@@ -182,6 +378,7 @@ function drawLookup(result: Lookup) {
         node.setAttribute("aria-pressed", String(rank === index)));
       showDetail(result, neighbour);
       highlight(result);
+      void drawLightCurves(result, neighbour);
       revealDistance();
     });
     const listItem = element("li", "");
@@ -191,6 +388,7 @@ function drawLookup(result: Lookup) {
   arrive(ranks.children, 5);
   showDetail(result, result.neighbours[active]);
   highlight(result);
+  void drawLightCurves(result, result.neighbours[active]);
 }
 
 function revealDistance() {
@@ -646,6 +844,8 @@ function showDetail(result: Lookup, neighbour: Neighbour) {
 }
 
 function drawExample() {
+  lightCurveSection.hidden = true;
+  jumpLightCurve.disabled = true;
   visibleLookup = undefined;
   syncStudyButtons();
   stabilityPanel.hidden = true;
@@ -988,6 +1188,10 @@ for (const section of document.querySelectorAll<HTMLDetailsElement>(".inspector-
 }
 jumpRanking.addEventListener("click", () => revealInspector(rankingSection, true));
 jumpDistance.addEventListener("click", () => revealInspector(detailSection, true));
+jumpLightCurve.addEventListener("click", () => {
+  lightCurveSection.open = true;
+  lightCurveSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 reset.addEventListener("click", () => scene?.reset());
 const opening = showOpening();
 void start(opening).catch((problem: unknown) => {

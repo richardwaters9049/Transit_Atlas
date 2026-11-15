@@ -10,6 +10,25 @@ fn catalogue(state: State<'_, Atlas>) -> Result<Value, String> {
 }
 
 #[tauri::command]
+fn light_curve(koi_id: String, quarter: u8) -> Result<Value, String> {
+    let source = match (koi_id.as_str(), quarter) {
+        ("K00115.03", 4) => include_str!("../../../data/generated/lightcurves/K00115.03-q04.json"),
+        ("K02961.01", 4) => include_str!("../../../data/generated/lightcurves/K02961.01-q04.json"),
+        _ => {
+            return Err(format!(
+                "No bundled Kepler light curve is available for {koi_id}, quarter {quarter}."
+            ))
+        }
+    };
+    let mut document: Value = serde_json::from_str(source)
+        .map_err(|error| format!("Invalid bundled light-curve document: {error}"))?;
+    if let Some(object) = document.as_object_mut() {
+        object.remove("cadences");
+    }
+    Ok(document)
+}
+
+#[tauri::command]
 fn neighbours(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
     serde_json::to_value(state.lookup(&query_id)?).map_err(|error| error.to_string())
 }
@@ -87,6 +106,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             catalogue,
+            light_curve,
             neighbours,
             exact_sensitivity,
             projection_audit,
@@ -97,4 +117,31 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("could not start Transit Atlas");
+}
+
+#[cfg(test)]
+mod light_curve_tests {
+    use super::light_curve;
+
+    #[test]
+    fn bundled_candidate_and_reference_documents_load_for_the_ui() {
+        for (koi_id, expected_role) in [("K00115.03", "candidate"), ("K02961.01", "reference")] {
+            let document =
+                light_curve(koi_id.to_string(), 4).expect("bundled light curve should load");
+            assert_eq!(document["schema"], "transit-atlas.kepler-lightcurve");
+            assert_eq!(document["identity"]["koi_id"], koi_id);
+            assert_eq!(document["identity"]["signal_role"], expected_role);
+            assert_eq!(document["source"]["quarter"], 4);
+            assert!(document["folded"]["points"]
+                .as_array()
+                .is_some_and(|points| !points.is_empty()));
+            assert!(document.get("cadences").is_none());
+        }
+    }
+
+    #[test]
+    fn unknown_light_curve_returns_a_clear_error() {
+        let error = light_curve("K99999.99".to_string(), 4).expect_err("unknown product must fail");
+        assert!(error.contains("No bundled Kepler light curve"));
+    }
 }
