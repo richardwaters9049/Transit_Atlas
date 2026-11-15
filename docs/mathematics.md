@@ -2,6 +2,8 @@
 
 Transit Atlas compares fitted Kepler catalogue measurements. This guide follows a signal from its original catalogue values through the eight-dimensional ranking, the 3D projection and the sensitivity checks.
 
+For a conceptual introduction, start with the dedicated guides: [K-nearest neighbours](knn.md), [linear algebra](linear-algebra.md) and [the eight-dimensional feature space](eight-dimensional-space.md). This document keeps the detailed derivations and worked calculations in one place.
+
 - [Data and host partitions](#data-and-host-partitions)
 - [Transforms and standardisation](#transforms-and-standardisation)
 - [Exact neighbours and distance contributions](#exact-neighbours-and-distance-contributions)
