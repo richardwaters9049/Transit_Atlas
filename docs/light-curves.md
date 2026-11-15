@@ -44,21 +44,21 @@ This is a display guide derived from the catalogue duration, not a transit fit o
 Kepler light-curve files contain an integer quality flag for each cadence. A processing mask $M$ accepts cadence $i$ when
 
 $$
-(q_i\;\&\;M)=0,
+\operatorname{bitand}(q_i,M)=0,
 $$
 
-where $\&$ is the bitwise AND operation. The current reference implementation uses Lightkurve's Kepler default quality bitmask, **1,130,799**, which removes cadences with severe quality issues. The selected mask is stored in the derived document.
+where $\operatorname{bitand}(q_i,M)$ denotes the bitwise AND of the cadence quality flag and the selected mask. The current reference implementation uses Lightkurve's Kepler default quality bitmask, **1,130,799**, which removes cadences with severe quality issues. The selected mask is stored in the derived document.
 
 The FITS source and the complete time, flux, uncertainty, quality and cadence-number arrays remain unchanged. Filtering applies only when deriving the plotted series. This allows another analyst to choose a different mask and reproduce the result.
 
 ## Flux normalisation
 
-The selected flux column is \`pdcsap_flux\` by default. The importer also permits \`sap_flux\`, but the chosen column must be recorded. Both are archive pipeline products; neither should be described as untouched detector counts.
+The selected flux column is `pdcsap_flux` by default. The importer also permits `sap_flux`, but the chosen column must be recorded. Both are archive pipeline products; neither should be described as untouched detector counts.
 
 For one product, define the accepted finite cadence set
 
 $$
-S = \{i : (q_i\;\&\;M)=0,\;t_i\text{ finite},\;F_i\text{ finite}\}.
+S = \{i \mid \operatorname{bitand}(q_i,M)=0,\;\operatorname{isfinite}(t_i),\;\operatorname{isfinite}(F_i)\}.
 $$
 
 The baseline is the median accepted flux
@@ -99,7 +99,7 @@ The KOI-to-KIC association and the KOI ephemeris must be checked against the pin
 
 ## Portable document
 
-The first JSON data contract is \`transit-atlas.kepler-lightcurve\`, version 1. It contains the identity, ephemeris, MAST provenance, processing settings, original cadence arrays and derived folded points. The original FITS file remains alongside it and is referenced by a repository-relative path and SHA-256.
+The first JSON data contract is `transit-atlas.kepler-lightcurve`, version 1. It contains the identity, ephemeris, MAST provenance, processing settings, original cadence arrays and derived folded points. The original FITS file remains alongside it and is referenced by a repository-relative path and SHA-256.
 
 Offline replay must use the local FITS bytes and the saved processing settings. It must not silently download a newer archive product. A changed product or ephemeris is a new analysis input and must produce a new fingerprint.
 
