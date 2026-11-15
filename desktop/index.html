@@ -61,11 +61,23 @@
               <div class="plot-actions" data-arrival="4">
                 <button class="quiet" id="run-stability" type="button" aria-pressed="false" disabled>Explore uncertainty</button>
                 <button class="quiet" id="compare-release" type="button" aria-pressed="false" disabled>Compare releases</button>
+                <button class="quiet" id="audit-projection" type="button" aria-pressed="false" disabled>Audit projection</button>
                 <button id="example" class="quiet" type="button" aria-pressed="false" disabled>3D ranking example</button>
                 <button id="expand-plot" class="quiet" type="button" aria-pressed="false" disabled>Expand 3D</button>
               </div>
             </header>
             <p class="plot-status" id="plot-status" role="status" hidden></p>
+            <div id="audit-controls" class="release-controls audit-controls" data-arrival="4" hidden>
+              <label for="audit-filter">Shared top-five neighbours</label>
+              <select class="quiet" id="audit-filter">
+                <option value="all">All candidates</option>
+                <option value="none">0 shared</option>
+                <option value="low">1–2 shared</option>
+                <option value="high">3–5 shared</option>
+              </select>
+              <button class="quiet" id="audit-example" type="button">Strongest mismatch</button>
+              <output id="audit-overview" for="audit-filter" aria-live="polite"></output>
+            </div>
             <div id="release-controls" class="release-controls" data-arrival="4" hidden>
               <button class="quiet" id="release-dr24" type="button" aria-pressed="false">DR24</button>
               <button class="quiet" id="release-current" type="button" aria-pressed="false">Cumulative</button>
@@ -106,6 +118,14 @@
             </header>
             <div class="inspector-scroll" id="inspector-scroll">
               <p id="uncertainty" class="notice" data-arrival="4" hidden></p>
+              <details id="audit-inspector" class="inspector-section" data-arrival="5" open hidden>
+                <summary>Closest in 3D</summary>
+                <div class="detail audit-detail inspector-body">
+                  <p id="audit-selection"></p>
+                  <div id="audit-table"></div>
+                  <p class="footnote">Omitted is the share of squared 8D distance outside the three displayed principal components.</p>
+                </div>
+              </details>
               <details class="inspector-section" id="ranking-section" data-arrival="5" open>
                 <summary id="ranking-title">Neighbour ranking</summary>
                 <div class="inspector-body">

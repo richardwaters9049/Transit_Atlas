@@ -199,6 +199,12 @@ button.quiet, .search-fields button, .rank { transition: background-color 140ms,
   padding: 9px 16px; background: var(--raised); border-bottom: 1px solid var(--stroke);
 }
 .release-controls output { color: var(--signal); font: 11px/1.4 var(--mono); }
+.audit-controls label { color: var(--muted); font-size: 12px; }
+.audit-controls select { color-scheme: dark; font-family: inherit; }
+.audit-controls output { flex-basis: 100%; }
+.audit-detail td { font-family: var(--mono); white-space: nowrap; }
+.audit-detail th, .audit-detail td { padding-inline: 4px; }
+.audit-detail th:first-child { text-align: left; }
 .release-fallback { padding: 0 16px 9px; }
 .release-inspector h3 { font-size: 13px; }
 .plot-modal {

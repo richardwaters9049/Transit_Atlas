@@ -18,6 +18,7 @@ interface Selection {
   query: PlotPoint;
   neighbours: PlotPoint[];
   active: number;
+  projected: PlotPoint[];
 }
 
 interface Study {
@@ -97,9 +98,9 @@ export class SignalScene {
     this.frameView();
   }
 
-  highlight(query: PlotPoint, neighbours: PlotPoint[], active: number): void {
+  highlight(query: PlotPoint, neighbours: PlotPoint[], active: number, projected: PlotPoint[] = []): void {
     const queryChanged = this.selection?.query.id !== query.id;
-    this.selection = { query, neighbours, active };
+    this.selection = { query, neighbours, active, projected };
     this.drawSelection();
     if (this.focused && queryChanged && !this.study) this.frameView();
     this.requestFrame();
@@ -156,7 +157,7 @@ export class SignalScene {
     const selection = this.selection;
     const points = this.study
       ? [this.study.nominal, ...this.study.scenarios, ...this.study.references]
-      : selection ? [selection.query, ...selection.neighbours] : [];
+      : selection ? [selection.query, ...selection.neighbours, ...selection.projected] : [];
     const bounds = this.focused && points.length
       ? new THREE.Box3().setFromPoints(points.map((point) => new THREE.Vector3(...point.position)))
       : undefined;
@@ -183,7 +184,7 @@ export class SignalScene {
     this.markerMount.replaceChildren();
     this.pointLabels = [];
     if (!this.selection) return;
-    const { query, neighbours, active } = this.selection;
+    const { query, neighbours, active, projected } = this.selection;
     const selected = neighbours[active];
 
     if (this.focused) {
@@ -192,6 +193,10 @@ export class SignalScene {
       this.selectionLines.add(this.lines(branches, selected.colour, 0.27, true));
     }
     this.selectionLines.add(this.lines([query.position, selected.position], selected.colour, 0.86, true));
+    if (this.focused && projected.length) {
+      const links = projected.flatMap((point) => [query.position, point.position]);
+      this.selectionLines.add(this.lines(links, projected[0].colour, 0.52, true));
+    }
 
     this.pointLabels.push(
       this.addMarker(this.markerMount, query.id, query.position, query.colour, "scene-tag query-tag"),
@@ -199,6 +204,8 @@ export class SignalScene {
       ...neighbours.flatMap((point, index) => index === active
         ? []
         : [this.addMarker(this.markerMount, String(index + 1), point.position, point.colour, "rank-marker", true)]),
+      ...projected.map((point) =>
+        this.addMarker(this.markerMount, point.id, point.position, point.colour, "rank-marker", true)),
     );
     const study = this.study;
     if (study && (study.releaseLink || query.id !== study.nominal.id)) {

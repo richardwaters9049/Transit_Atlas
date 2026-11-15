@@ -23,6 +23,14 @@ Search by Kepler Object of Interest (KOI) ID or click a candidate in the plot. D
 
 The three displayed principal components retain 70.0% of training variance. Rust ranks neighbours using all eight standardised measurements and excludes signals that share the query’s star. Open **3D ranking example** for a small demonstration of how the ranking changes when dimensions are dropped. Archive labels describe the catalogue’s dispositions. Planet confirmation requires independent evidence. [Data and methods](docs/methods.md)
 
+### Audit the 3D projection
+
+Select **Audit projection** to compare the three-component and eight-dimensional rankings for all 1,872 candidates. Filter the 3D map by how many neighbours the two top-five lists share. The inspector shows the projected distance, full distance, full rank and share of squared distance omitted by the projection for each of the five closest points in 3D.
+
+Start with `K00115.03`. Its closest reference in 3D, `K08264.01`, ranks 1,836th in eight dimensions. **Strongest mismatch** jumps to `K00622.01`, where the closest point in 3D ranks 5,157th overall. **Focus on both rankings** frames the selected candidate and both sets of neighbours. [Projection audit method](docs/methods.md#projection-audit)
+
+![Projection audit showing the 3D and 8D neighbour sets for K00622.01](docs/screenshots/projection-audit.png)
+
 ### Explore measurement uncertainty
 
 Select **Explore uncertainty** to calculate 64 scenarios within the candidate’s available quoted ranges. Click a point or move the slider to inspect the measurements and ranking for that scenario. For `K00115.03`, scenario 1 changes the nearest neighbour from `K02961.01` to `K02612.01`. Select **Catalogue values** to return to the original measurements.
@@ -37,7 +45,7 @@ Search for `K00005.01` and select **Compare releases**. Switch between **DR24** 
 
 ### Save and replay a study
 
-**Save study…** records the candidate, selected neighbour, scenario or release, and camera in a portable `.atlas.json` file. The file includes the projected positions and eight-dimensional distance contributions. **Open study…** verifies the data fingerprints and recalculates the evidence before restoring the view.
+**Save study…** records the candidate, selected neighbour, active scenario, release or projection filter, and camera in a portable `.atlas.json` file. The file includes the projected positions and eight-dimensional distance contributions. **Open study…** verifies the data fingerprints and recalculates the evidence before restoring the view.
 
 ## Opening and walkthrough
 
@@ -60,7 +68,7 @@ cargo test -p atlas-core --locked
 (cd desktop && bun run build)
 ```
 
-For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core --example stability -- K00115.03 K00005.01`. Launch with `TRANSIT_ATLAS_TRACE=1 bun run tauri dev` to print a summary when the app runs a stability or release comparison.
+For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core --example stability -- K00115.03 K00005.01`. Launch with `TRANSIT_ATLAS_TRACE=1 bun run tauri dev` to print a summary when the app calculates uncertainty, compares releases or audits the projection.
 
 The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation stars. It agreed with 704 of 776 usable held-out archive labels (90.7%), compared with 59.7% for the training majority baseline. The majority baseline had higher raw agreement at signal-to-noise ratios below 10. [Evaluation protocol and failure cases](docs/evaluation.md)
 

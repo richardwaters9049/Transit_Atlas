@@ -47,6 +47,23 @@ The synthetic fixture ranks **C, A, B** in eight dimensions and **B, C, A** usin
 
 The stability analysis joins a separate [NASA error extract](../data/raw/kepler-koi-errors-2026-11-15.json) to the pinned measurements by exact KOI, host and central values. A deterministic Halton sequence explores the joint box defined by the signed catalogue offsets. Signal-to-noise and measurements with missing or invalid bounds stay fixed. Ranks use the original scaler and reference set. Recurrence describes those scenarios, with unknown measurement correlations and fixed references. Planet confirmation requires independent evidence. Regenerate the ranges with `python reference/export_uncertainties.py`. [Archive column definitions](https://exoplanetarchive.ipac.caltech.edu/docs/API_kepcandidate_columns.html)
 
+## Projection audit
+
+For each of the 1,872 usable candidates, rank references twice using the same training pool and same-star exclusion. The 8D ranking uses the standardised measurements. The projected ranking uses Euclidean distance across the three frozen PCA coordinates. Both rankings break ties by KOI ID.
+
+The inspector reports the full 8D rank for each of the five closest references in the projection. Because the retained components are orthonormal, the share of squared distance outside the projection is `1 − d₃²/d₈²`. A zero 8D distance has an undefined share. The strongest mismatch is the candidate whose first projected neighbour has the lowest 8D placement among candidates with zero common top-five neighbours. Ties are broken by candidate KOI ID. [PCA reference](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
+
+| Shared top-five references | Candidates |
+| ---: | ---: |
+| 0 | 601 |
+| 1 | 667 |
+| 2 | 406 |
+| 3 | 150 |
+| 4 | 42 |
+| 5 | 6 |
+
+The first-ranked reference changes for 1,642 candidates. These counts measure the effect of projecting this snapshot and reference pool.
+
 ## Catalogue release comparison
 
 The [DR24 extract](../data/raw/kepler-koi-dr24-2026-11-15.json) covers 1,202 of the 1,872 usable candidates, matched by KOI and Kepler host ID with eight usable measurements. The comparison applies the same scaler, PCA and reference pool to both releases. The line in 3D connects the two projected catalogue positions. The inspector reports each measurement in its original units, signed changes after scaling, and the eight-dimensional shift. [Archive release notes](https://exoplanetarchive.ipac.caltech.edu/docs/PurposeOfKOITable.html)
