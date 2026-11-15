@@ -1,5 +1,6 @@
-import { dispositionColours, dispositionLabels, getCatalogue, getNeighbours, getReleaseComparison, getStability } from "./model";
-import type { Catalogue, Disposition, Lookup, Neighbour, Observation, Position, ReleaseComparison, Stability } from "./model";
+import { dispositionColours, dispositionLabels, getCatalogue, getNeighbours, getProjectionAudit, getReleaseComparison, getStability } from "./model";
+import type { CandidateAudit, Catalogue, Disposition, Lookup, Neighbour, Observation, Position, ProjectionAudit, ReleaseComparison, Stability } from "./model";
+import { auditGroup, auditGroups, auditTable, readAuditFilter, type AuditFilter } from "./projection-audit";
 import { releaseMeasurements } from "./release-view";
 import { checkStudy, makeStudy, openStudyFile, parseStudy, saveStudyFile } from "./study-file";
 import type { StudyView } from "./study-file";
@@ -47,6 +48,10 @@ const releaseCurrent = byId<HTMLButtonElement>("release-current");
 const releaseControls = byId("release-controls");
 const releaseFallback = byId("release-fallback");
 const releaseInspector = byId("release-inspector");
+const auditButton = byId<HTMLButtonElement>("audit-projection");
+const auditControls = byId("audit-controls");
+const auditInspector = byId<HTMLDetailsElement>("audit-inspector");
+const auditFilterControl = byId<HTMLSelectElement>("audit-filter");
 const openStudyButton = byId<HTMLButtonElement>("open-study");
 const saveStudyButton = byId<HTMLButtonElement>("save-study");
 const studyFileStatus = byId("study-status");
@@ -60,6 +65,13 @@ const replacementColour = "#d1a0ff";
 const historicalColour = "#6de0eb";
 const cumulativeColour = "#e4adff";
 const comparisonExample = "K00005.01";
+const projectedColour = "#80dfff";
+
+interface AuditData {
+  report: ProjectionAudit;
+  byId: Map<string, CandidateAudit>;
+  strongestMismatch?: CandidateAudit;
+}
 
 let catalogue: Catalogue;
 let scene: SignalScene | undefined;
@@ -74,6 +86,10 @@ let scenario = 0;
 let releaseReport: ReleaseComparison | undefined;
 let pendingRelease: Lookup | undefined;
 let showingEarlier = false;
+let auditData: AuditData | undefined;
+let auditRequest: symbol | undefined;
+let auditPromise: Promise<AuditData> | undefined;
+let auditFilter: AuditFilter = "all";
 let latestRequest = 0;
 let fileBusy = false;
 
@@ -120,6 +136,13 @@ function drawLookup(result: Lookup) {
   jumpRanking.disabled = jumpDistance.disabled = false;
   stabilityPanel.hidden = !study;
   releaseInspector.hidden = !releaseReport;
+  const audit = auditData?.byId.get(result.query.koi_id);
+  auditInspector.hidden = !audit;
+  if (audit) {
+    const outsideFilter = auditFilter !== "all" && auditGroup(audit.shared) !== auditFilter;
+    byId("audit-selection").textContent = `${audit.shared}/5 shared · ${number.format(audit.eligible_references)} eligible references${outsideFilter ? " · Outside filter" : ""}`;
+    byId("audit-table").replaceChildren(auditTable(audit));
+  }
   const view = releaseReport ? showingEarlier ? "DR24" : "Cumulative" : scenario ? `Scenario ${scenario}` : "";
   const label = view ? `${view} · ${result.query.koi_id}` : result.query.koi_id;
   summary.textContent = `${label} · ${number.format(result.eligible_references)} eligible references · ${result.same_host_excluded} same-star exclusions`;
@@ -217,6 +240,12 @@ function clearStudy() {
   releaseReport = undefined;
   pendingRelease = undefined;
   showingEarlier = false;
+  auditData = undefined;
+  auditRequest = undefined;
+  auditControls.hidden = auditInspector.hidden = true;
+  auditButton.disabled = !lookup || example;
+  auditButton.textContent = "Audit projection";
+  auditButton.setAttribute("aria-pressed", "false");
   scenarioControls.hidden = stabilityPanel.hidden = plotStatus.hidden = true;
   delete plotStatus.dataset.loading;
   releaseControls.hidden = releaseInspector.hidden = releaseFallback.hidden = true;
@@ -262,7 +291,7 @@ function variationLookup(nominal: Lookup, query: Observation, neighbours: Neighb
 async function runStability(prefetched?: Stability, initialScenario = 1) {
   const current = lookup;
   if (!current || example || pendingStudy) return;
-  if (releaseReport || pendingRelease) setExample(false);
+  if (releaseReport || pendingRelease || auditData || auditRequest) setExample(false);
   releaseFallback.hidden = true;
   pendingStudy = current;
   stabilityButton.disabled = true;
@@ -338,7 +367,7 @@ function selectRelease(earlier: boolean) {
 async function runRelease(prefetched?: ReleaseComparison, initialEarlier = true) {
   const current = lookup;
   if (!current || example || pendingRelease) return;
-  if (study || pendingStudy) setExample(false);
+  if (study || pendingStudy || auditData || auditRequest) setExample(false);
   pendingRelease = current;
   releaseButton.disabled = true;
   plotStatus.dataset.loading = "";
@@ -397,15 +426,95 @@ function highlight(result: Lookup) {
   const queryPoint = point(result.query, releaseReport ? showingEarlier ? historicalColour : cumulativeColour : candidateColour);
   if (releaseReport) queryPoint.id = showingEarlier ? "DR24" : "Cumulative";
   else if (scenario) queryPoint.id = `Scenario ${scenario}`;
-  scene?.highlight(queryPoint, neighbours, active);
+  const projected = auditData?.byId.get(result.query.koi_id)?.projected_neighbours.flatMap((item, index) =>
+    item.full_rank > 5 ? [{ position: item.position, colour: projectedColour, id: `P${index + 1}` }] : []);
+  scene?.highlight(queryPoint, neighbours, active, projected);
   focusButton.hidden = projectedLines.hidden = !scene || example;
 }
 
 function setFocus(value: boolean) {
   focused = value;
   focusButton.setAttribute("aria-pressed", String(value));
-  focusButton.textContent = value ? "Show full plot" : releaseReport ? "Focus on releases" : study ? "Focus on scenarios" : "Focus on neighbours";
+  focusButton.textContent = value ? "Show full plot" : releaseReport ? "Focus on releases" : study ? "Focus on scenarios"
+    : auditData ? "Focus on both rankings" : "Focus on neighbours";
   scene?.setFocus(value);
+}
+
+function loadAudit(): Promise<AuditData> {
+  return auditPromise ??= getProjectionAudit().then((report) => {
+    let strongestMismatch: CandidateAudit | undefined;
+    for (const candidate of report.candidates) {
+      if (candidate.shared === 0 && (!strongestMismatch ||
+          candidate.projected_neighbours[0].full_rank > strongestMismatch.projected_neighbours[0].full_rank)) {
+        strongestMismatch = candidate;
+      }
+    }
+    return { report, byId: new Map(report.candidates.map(row => [row.koi_id, row])), strongestMismatch };
+  }).catch((problem: unknown) => {
+    auditPromise = undefined;
+    throw problem;
+  });
+}
+
+function showAudit(data: AuditData, filter: AuditFilter) {
+  if (!lookup) return;
+  auditData = data;
+  auditFilter = filter;
+  auditFilterControl.value = filter;
+  const { report, byId: rows } = data;
+  const groups = Object.entries(auditGroups).filter(([group]) => filter === "all" || group === filter);
+  const visible = report.candidates.filter(row => filter === "all" || auditGroup(row.shared) === filter).length;
+  const points = catalogue.observations.flatMap((row) => {
+    const candidate = rows.get(row.koi_id);
+    if (!candidate) return [point(row, "#465467")];
+    const group = auditGroup(candidate.shared);
+    return filter === "all" || group === filter ? [point(row, auditGroups[group].colour, true)] : [];
+  });
+  scene?.show(points);
+  setFocus(false);
+  plotTitle.textContent = "Projection audit";
+  byId("results-title").textContent = "Neighbour comparison";
+  auditButton.textContent = "Back to catalogue";
+  auditButton.setAttribute("aria-pressed", "true");
+  auditControls.hidden = false;
+  auditInspector.open = true;
+  byId<HTMLButtonElement>("audit-example").disabled = !data.strongestMismatch;
+  byId("audit-overview").textContent = `${number.format(visible)} of ${number.format(report.candidates.length)} shown · Nearest neighbour changes for ${number.format(report.changed_nearest)} across the catalogue`;
+  byId("controls").textContent = "Drag to orbit · Select a candidate";
+  projectedLines.textContent = "Gold numbers show 8D ranks. Cyan P markers appear only in the 3D top five.";
+  drawLegend([
+    ...groups.map(([, group]): [string, string] => [group.label, group.colour]),
+    ["8D top five", neighbourColour],
+    ["3D-only top five", projectedColour],
+  ]);
+  drawLookup(lookup);
+}
+
+async function runAudit() {
+  if (!lookup || auditRequest) return;
+  if (example || study || pendingStudy || releaseReport || pendingRelease) setExample(false);
+  const request = Symbol();
+  auditRequest = request;
+  auditButton.disabled = true;
+  plotStatus.dataset.loading = "";
+  plotStatus.textContent = "Comparing 3D and 8D neighbours across the catalogue…";
+  plotStatus.hidden = false;
+  try {
+    const data = await loadAudit();
+    if (auditRequest !== request) return;
+    plotStatus.hidden = true;
+    showAudit(data, "all");
+    inspectorScroll.scrollTop = 0;
+    arrive([auditControls, auditInspector], 7);
+  } catch (problem) {
+    if (auditRequest === request) plotStatus.textContent = String(problem);
+  } finally {
+    if (auditRequest === request) {
+      auditRequest = undefined;
+      auditButton.disabled = false;
+      delete plotStatus.dataset.loading;
+    }
+  }
 }
 
 function showDetail(result: Lookup, neighbour: Neighbour) {
@@ -483,8 +592,8 @@ function setExample(value: boolean) {
   plotTitle.textContent = value ? "Where the projection loses detail" : "Kepler signals";
   byId("results-title").textContent = value ? "Full and projected distances" : "Nearest neighbours";
   if (scene) byId("controls").textContent = value
-    ? "Drag to orbit · Scroll to zoom"
-    : "Drag to orbit · Scroll to zoom · Click a candidate";
+    ? "Drag to orbit"
+    : "Drag to orbit · Click a candidate";
   if (value) {
     drawExample();
   } else {
@@ -508,10 +617,11 @@ async function runLookup(id: string, openRelease = false, prefetched?: Promise<L
     query.value = result.query.koi_id;
     if (example || reopenStudy || reopenRelease) setExample(false);
     else {
-      plotStatus.hidden = true;
+      if (!auditRequest) plotStatus.hidden = true;
       releaseFallback.hidden = true;
       stabilityButton.disabled = false;
       releaseButton.disabled = false;
+      auditButton.disabled = Boolean(auditRequest);
       drawLookup(result);
     }
     if (reopenRelease) await runRelease();
@@ -541,14 +651,16 @@ function studyMessage(message: string, failed = false) {
 async function saveCurrentStudy() {
   if (!lookup || !visibleLookup || fileBusy) return;
   const view: StudyView = releaseReport ? { kind: "release", release: showingEarlier ? "DR24" : "Cumulative" }
-    : study ? { kind: "uncertainty", scenario } : { kind: "catalogue" };
+    : study ? { kind: "uncertainty", scenario } : auditData ? { kind: "projection", filter: auditFilter }
+    : { kind: "catalogue" };
   const selection = {
     candidate: lookup.query.koi_id,
     neighbour: visibleLookup.neighbours[active].observation.koi_id,
     view,
     camera: scene?.captureView() ?? null,
   };
-  const file = makeStudy(selection, catalogue, lookup, visibleLookup, study, releaseReport);
+  const file = makeStudy(selection, catalogue, lookup, visibleLookup, study, releaseReport,
+    auditData?.byId.get(selection.candidate));
   fileBusy = true;
   syncStudyButtons();
   studyMessage("");
@@ -581,6 +693,7 @@ async function restoreStudy() {
     let visible = nominal;
     let uncertaintyReport: Stability | undefined;
     let comparison: ReleaseComparison | undefined;
+    let projection: AuditData | undefined;
     if (view.kind === "uncertainty") {
       uncertaintyReport = await getStability(candidate);
       if (view.scenario > uncertaintyReport.scenarios.length) {
@@ -593,8 +706,12 @@ async function restoreStudy() {
     } else if (view.kind === "release") {
       comparison = await getReleaseComparison(candidate);
       if (view.release === "DR24") visible = variationLookup(nominal, comparison.earlier_query, comparison.earlier_neighbours);
+    } else if (view.kind === "projection") {
+      projection = await loadAudit();
+      if (!projection.byId.has(candidate)) throw new Error("This candidate has no projection audit.");
     }
-    const rank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison);
+    const rank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison,
+      projection?.byId.get(candidate));
     if (request !== latestRequest) {
       throw new Error("The active search changed. Open the study again to restore it.");
     }
@@ -609,6 +726,7 @@ async function restoreStudy() {
     setExample(false);
     if (view.kind === "uncertainty") await runStability(uncertaintyReport, view.scenario);
     else if (view.kind === "release") await runRelease(comparison, view.release === "DR24");
+    else if (view.kind === "projection" && projection) showAudit(projection, view.filter);
     if (rank !== active) {
       active = rank;
       drawLookup(visible);
@@ -667,7 +785,7 @@ async function start(opening: ReturnType<typeof showOpening>) {
   query.disabled = submit.disabled = exampleButton.disabled = false;
   reset.disabled = !scene;
   expandButton.disabled = !scene;
-  byId("pinch-hint").hidden = !scene;
+  byId("zoom-hint").hidden = !scene;
   query.value = initialQuery;
   await runLookup(initialQuery, demoRelease, firstLookup);
   if (!demoRelease && import.meta.env.DEV && import.meta.env.VITE_TRANSIT_ATLAS_SHOW_STABILITY === "1") {
@@ -690,6 +808,25 @@ stabilityButton.addEventListener("click", () => {
 releaseButton.addEventListener("click", () => {
   if (releaseReport) setExample(false);
   else void runRelease();
+});
+auditButton.addEventListener("click", () => {
+  if (auditData) setExample(false);
+  else void runAudit();
+});
+auditFilterControl.addEventListener("change", () => {
+  const filter = readAuditFilter(auditFilterControl.value);
+  if (auditData && filter) showAudit(auditData, filter);
+});
+byId("audit-example").addEventListener("click", async () => {
+  const current = auditData;
+  const target = current?.strongestMismatch;
+  if (!current || !target) return;
+  showAudit(current, "none");
+  await runLookup(target.koi_id);
+  if (auditData === current && lookup?.query.koi_id === target.koi_id) {
+    setFocus(true);
+    revealInspector(auditInspector, true);
+  }
 });
 releaseEarlier.addEventListener("click", () => selectRelease(true));
 releaseCurrent.addEventListener("click", () => selectRelease(false));

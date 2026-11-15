@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Catalogue, Lookup, Position, ReleaseComparison, Stability } from "./model";
+import type { CandidateAudit, Catalogue, Lookup, Position, ReleaseComparison, Stability } from "./model";
+import { readAuditFilter, type AuditFilter } from "./projection-audit";
 
 const SCHEMA = "transit-atlas.study";
 const VERSION = 1;
@@ -13,6 +14,7 @@ export interface StudyCamera {
 
 export type StudyView =
   | { kind: "catalogue" }
+  | { kind: "projection"; filter: AuditFilter }
   | { kind: "uncertainty"; scenario: number }
   | { kind: "release"; release: "DR24" | "Cumulative" };
 
@@ -29,12 +31,14 @@ function evidence(
   visible: Lookup,
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
+  audit?: CandidateAudit,
 ) {
   return {
     feature_metadata: catalogue.features,
     variance_ratios: catalogue.variance_ratios,
     query: visible.query,
     neighbours: visible.neighbours,
+    ...(audit ? { projection_audit: audit } : {}),
     context_points: uncertainty ? [
       { id: "catalogue", position: nominal.query.position, nearest: nominal.neighbours[0].observation.koi_id },
       ...uncertainty.scenarios.map((trial, index) => ({
@@ -56,6 +60,7 @@ export function makeStudy(
   visible: Lookup,
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
+  audit?: CandidateAudit,
 ) {
   return {
     schema: SCHEMA,
@@ -67,7 +72,7 @@ export function makeStudy(
       variation_sha256: uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? null,
     },
     selection,
-    evidence: evidence(catalogue, nominal, visible, uncertainty, comparison),
+    evidence: evidence(catalogue, nominal, visible, uncertainty, comparison, audit),
   };
 }
 
@@ -109,11 +114,13 @@ function readCamera(value: unknown): StudyCamera | null {
 }
 
 function readView(value: unknown): StudyView {
-  const { kind, scenario, release } = record(value);
+  const { kind, scenario, release, filter } = record(value);
   if (kind === "catalogue") return { kind };
   if (kind === "uncertainty" && typeof scenario === "number" &&
       Number.isSafeInteger(scenario) && scenario >= 0) return { kind, scenario };
   if (kind === "release" && (release === "DR24" || release === "Cumulative")) return { kind, release };
+  const auditFilter = readAuditFilter(filter);
+  if (kind === "projection" && auditFilter) return { kind, filter: auditFilter };
   throw new Error("The study has an invalid investigation view.");
 }
 
@@ -165,6 +172,7 @@ export function checkStudy(
   visible: Lookup,
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
+  audit?: CandidateAudit,
 ) {
   if (file.catalogue.sha256 !== catalogue.snapshot.sha256) {
     throw new Error("This study was saved with a different Kepler catalogue snapshot.");
@@ -173,7 +181,7 @@ export function checkStudy(
     throw new Error("This study uses a different set of uncertainty or release measurements.");
   }
   if (!matches(file.catalogue, catalogue.snapshot) ||
-      !matches(file.evidence, evidence(catalogue, nominal, visible, uncertainty, comparison))) {
+      !matches(file.evidence, evidence(catalogue, nominal, visible, uncertainty, comparison, audit))) {
     throw new Error("The saved evidence differs from the current calculation.");
   }
   const rank = visible.neighbours.findIndex(({ observation }) => observation.koi_id === file.selection.neighbour);

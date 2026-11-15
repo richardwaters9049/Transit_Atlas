@@ -54,6 +54,30 @@ export const getCatalogue = () => invoke<Catalogue>("catalogue");
 
 export const getNeighbours = (queryId: string) => invoke<Lookup>("neighbours", { queryId });
 
+export interface ProjectedNeighbour {
+  koi_id: string;
+  position: Position;
+  full_rank: number;
+  projected_distance: number;
+  full_distance: number;
+  omitted_share: number | null;
+}
+
+export interface CandidateAudit {
+  koi_id: string;
+  eligible_references: number;
+  shared: number;
+  projected_neighbours: ProjectedNeighbour[];
+}
+
+export interface ProjectionAudit {
+  candidates: CandidateAudit[];
+  by_overlap: number[];
+  changed_nearest: number;
+}
+
+export const getProjectionAudit = () => invoke<ProjectionAudit>("projection_audit");
+
 export interface StabilityOccurrence {
   koi_id: string;
   appearances: number;

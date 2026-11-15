@@ -6,11 +6,20 @@ mod stability;
 pub use stability::Stability;
 mod release;
 pub use release::ReleaseComparison;
+mod projection_audit;
+pub use projection_audit::ProjectionAudit;
 
 const FEATURE_COUNT: usize = 8;
 const K: usize = 5;
 const CATALOGUE: &str = include_str!("../../../data/generated/catalogue.json");
 type Vector = [f64; FEATURE_COUNT];
+
+fn squared_deltas<const N: usize>(left: &[f64; N], right: &[f64; N]) -> [f64; N] {
+    std::array::from_fn(|axis| {
+        let delta = left[axis] - right[axis];
+        delta * delta
+    })
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Feature {
@@ -191,11 +200,7 @@ impl Atlas {
         }
         let mut neighbours = Vec::with_capacity(eligible.len());
         for &index in eligible {
-            let vector = &self.scaled[index];
-            let squared_deltas = std::array::from_fn(|index| {
-                let delta = vector[index] - query[index];
-                delta * delta
-            });
+            let squared_deltas = squared_deltas(&self.scaled[index], query);
             let distance_squared: f64 = squared_deltas.iter().sum();
             neighbours.push(Neighbour {
                 observation: &self.catalogue.observations[index],

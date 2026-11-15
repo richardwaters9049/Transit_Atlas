@@ -15,6 +15,23 @@ fn neighbours(query_id: String, state: State<'_, Atlas>) -> Result<Value, String
 }
 
 #[tauri::command]
+async fn projection_audit(app: tauri::AppHandle) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let atlas = app.state::<Atlas>();
+        let audit = atlas.projection_audit()?;
+        if std::env::var("TRANSIT_ATLAS_TRACE").as_deref() == Ok("1") {
+            println!(
+                "[Transit Atlas] Projection audit · {} candidates · {} with no shared top five · {} with a different nearest neighbour",
+                audit.candidates.len(), audit.by_overlap[0], audit.changed_nearest,
+            );
+        }
+        serde_json::to_value(audit).map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
 fn compare_release(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
     let result = state.compare_release(&query_id)?;
     if std::env::var("TRANSIT_ATLAS_TRACE").as_deref() == Ok("1") {
@@ -52,6 +69,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             catalogue,
             neighbours,
+            projection_audit,
             stability,
             compare_release,
             study_files::save_study,
