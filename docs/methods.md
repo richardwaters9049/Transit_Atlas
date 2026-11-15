@@ -1,5 +1,7 @@
 # Data and methods
 
+For derivations, a worked Kepler calculation and reproduction commands, see [The mathematics of Transit Atlas](mathematics.md).
+
 ## Catalogue and distance
 
 The bundled CSV is the NASA Exoplanet Archive’s cumulative Kepler Objects of Interest table as retrieved on 14 November 2026. Its [manifest](../data/raw/kepler-koi-cumulative-2026-11-14.json) records the exact TAP query, row count, data DOI and SHA-256 checksum. All 9,564 rows were retrieved. Of those, 9,199 have usable values for all eight features.

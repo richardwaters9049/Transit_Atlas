@@ -2,6 +2,21 @@
 
 Transit Atlas is an offline macOS workbench for exploring NASA’s Kepler transit signals in 3D. Select a candidate, find its five nearest neighbours across eight archive measurements, and see how each measurement contributes to the distance. Explore how the ranking changes within the candidate’s quoted measurement ranges or between catalogue releases.
 
+The projection audit found **601 of 1,872 candidates** whose five closest references in the 3D view and in the full measurement space had nothing in common.
+
+## Table of contents
+
+- [Run on macOS](#run-on-macos)
+- [Explore the catalogue](#explore-the-catalogue)
+  - [Audit the 3D projection](#audit-the-3d-projection)
+  - [Explore measurement uncertainty](#explore-measurement-uncertainty)
+  - [Compare catalogue releases](#compare-catalogue-releases)
+  - [Save and replay a study](#save-and-replay-a-study)
+- [Opening and walkthrough](#opening-and-walkthrough)
+- [Verify the calculations](#verify-the-calculations)
+- [Technical documentation](#technical-documentation)
+- [Project layout](#project-layout)
+
 ![Transit Atlas on macOS showing the Kepler catalogue, selected signal and eight-dimensional neighbour ranking](docs/screenshots/catalogue.png)
 
 ## Run on macOS
@@ -72,6 +87,13 @@ For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core
 
 The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation stars. It agreed with 704 of 776 usable held-out archive labels (90.7%), compared with 59.7% for the training majority baseline. The majority baseline had higher raw agreement at signal-to-noise ratios below 10. [Evaluation protocol and failure cases](docs/evaluation.md)
 
+## Technical documentation
+
+- [Mathematics](docs/mathematics.md) derives the metric and projection, walks through a real Kepler comparison and explains what each sensitivity calculation measures.
+- [Data and methods](docs/methods.md) records catalogue coverage, feature definitions and the projection audit.
+- [Held-out evaluation](docs/evaluation.md) describes the host-based protocol, baselines and failure cases.
+- [Research roadmap](docs/research-roadmap.md) works through an exact ranking-change example and proposes a workflow that links the rankings to archived light curves.
+
 ## Project layout
 
 | Path | Contents |
@@ -83,6 +105,6 @@ The held-out evaluation tested `k = 3, 5, 7` and selected `k = 5` on validation 
 | `data/raw/` | Pinned NASA extracts, queries and checksum manifests |
 | `data/generated/` | Catalogue and comparison data bundled with the app |
 | `data/fixtures/`, `data/evaluation/` | Verified lookup fixture and held-out results |
-| `docs/` | Scientific methods, evaluation, screenshots and videos |
+| `docs/` | Mathematics, scientific methods, evaluation, research roadmap and media |
 
-The pinned cumulative table contains 9,564 Kepler signals. Of these, 9,199 have usable values for all eight measurements, including 1,872 candidates. The [snapshot manifest](data/raw/kepler-koi-cumulative-2026-11-14.json) records the query, retrieval date and SHA-256 checksum. [NASA Exoplanet Archive cumulative catalogue](https://doi.org/10.26133/NEA4) · [Veil Guard KNN and linear algebra notes](https://github.com/richardwaters9049/Veil-Guard/blob/main/docs/05-knn-and-linear-algebra.md)
+The pinned cumulative table contains 9,564 Kepler signals. Of these, 9,199 have usable values for all eight measurements, including 1,872 candidates. The [snapshot manifest](data/raw/kepler-koi-cumulative-2026-11-14.json) records the query, retrieval date and SHA-256 checksum. [NASA Exoplanet Archive cumulative catalogue](https://doi.org/10.26133/NEA4)
