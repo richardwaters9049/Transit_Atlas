@@ -108,6 +108,24 @@ export interface Scenario {
 
 export const getStability = (queryId: string) => invoke<Stability>("stability", { queryId });
 
+export interface ExactSensitivity {
+  query: string;
+  source_date: string;
+  source_sha256: string;
+  eligible_references: number;
+  nominal_nearest: string;
+  status: "stable" | "changed" | "near_tie";
+  challenger: string;
+  minimum_gap: number;
+  tolerance: number;
+  nominal_gap: number;
+  measurements: Stability["measurements"];
+  witness: { query: Observation; neighbours: Neighbour[] } | null;
+}
+
+export const getExactSensitivity = (queryId: string) =>
+  invoke<ExactSensitivity>("exact_sensitivity", { queryId });
+
 export interface ReleaseComparison {
   release: string;
   source_sha256: string;

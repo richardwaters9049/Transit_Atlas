@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CandidateAudit, Catalogue, Lookup, Position, ReleaseComparison, Stability } from "./model";
+import type { CandidateAudit, Catalogue, ExactSensitivity, Lookup, Position, ReleaseComparison, Stability } from "./model";
 import { readAuditFilter, type AuditFilter } from "./projection-audit";
 
 const SCHEMA = "transit-atlas.study";
@@ -15,6 +15,7 @@ export interface StudyCamera {
 export type StudyView =
   | { kind: "catalogue" }
   | { kind: "projection"; filter: AuditFilter }
+  | { kind: "exact"; witness: boolean }
   | { kind: "uncertainty"; scenario: number }
   | { kind: "release"; release: "DR24" | "Cumulative" };
 
@@ -32,6 +33,7 @@ function evidence(
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
   audit?: CandidateAudit,
+  exact?: ExactSensitivity,
 ) {
   return {
     feature_metadata: catalogue.features,
@@ -39,6 +41,7 @@ function evidence(
     query: visible.query,
     neighbours: visible.neighbours,
     ...(audit ? { projection_audit: audit } : {}),
+    ...(exact ? { exact_sensitivity: exact } : {}),
     context_points: uncertainty ? [
       { id: "catalogue", position: nominal.query.position, nearest: nominal.neighbours[0].observation.koi_id },
       ...uncertainty.scenarios.map((trial, index) => ({
@@ -49,6 +52,9 @@ function evidence(
     ] : comparison ? [
       { id: "DR24", position: comparison.earlier_query.position, nearest: comparison.earlier_nearest },
       { id: "Cumulative", position: nominal.query.position, nearest: comparison.current_nearest },
+    ] : exact?.witness ? [
+      { id: "catalogue", position: nominal.query.position, nearest: exact.nominal_nearest },
+      { id: "witness", position: exact.witness.query.position, nearest: exact.witness.neighbours[0].observation.koi_id },
     ] : [],
   };
 }
@@ -61,6 +67,7 @@ export function makeStudy(
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
   audit?: CandidateAudit,
+  exact?: ExactSensitivity,
 ) {
   return {
     schema: SCHEMA,
@@ -69,10 +76,10 @@ export function makeStudy(
     saved_at: new Date().toISOString(),
     provenance: {
       catalogue: catalogue.snapshot,
-      variation_sha256: uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? null,
+      variation_sha256: uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? exact?.source_sha256 ?? null,
     },
     selection,
-    evidence: evidence(catalogue, nominal, visible, uncertainty, comparison, audit),
+    evidence: evidence(catalogue, nominal, visible, uncertainty, comparison, audit, exact),
   };
 }
 
@@ -114,13 +121,14 @@ function readCamera(value: unknown): StudyCamera | null {
 }
 
 function readView(value: unknown): StudyView {
-  const { kind, scenario, release, filter } = record(value);
+  const { kind, scenario, release, filter, witness } = record(value);
   if (kind === "catalogue") return { kind };
   if (kind === "uncertainty" && typeof scenario === "number" &&
       Number.isSafeInteger(scenario) && scenario >= 0) return { kind, scenario };
   if (kind === "release" && (release === "DR24" || release === "Cumulative")) return { kind, release };
   const auditFilter = readAuditFilter(filter);
   if (kind === "projection" && auditFilter) return { kind, filter: auditFilter };
+  if (kind === "exact" && typeof witness === "boolean") return { kind, witness };
   throw new Error("The study has an invalid investigation view.");
 }
 
@@ -173,15 +181,16 @@ export function checkStudy(
   uncertainty?: Stability,
   comparison?: ReleaseComparison,
   audit?: CandidateAudit,
+  exact?: ExactSensitivity,
 ) {
   if (file.catalogue.sha256 !== catalogue.snapshot.sha256) {
     throw new Error("This study was saved with a different Kepler catalogue snapshot.");
   }
-  if (file.variationSha256 !== (uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? null)) {
+  if (file.variationSha256 !== (uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? exact?.source_sha256 ?? null)) {
     throw new Error("This study uses a different set of uncertainty or release measurements.");
   }
   if (!matches(file.catalogue, catalogue.snapshot) ||
-      !matches(file.evidence, evidence(catalogue, nominal, visible, uncertainty, comparison, audit))) {
+      !matches(file.evidence, evidence(catalogue, nominal, visible, uncertainty, comparison, audit, exact))) {
     throw new Error("The saved evidence differs from the current calculation.");
   }
   const rank = visible.neighbours.findIndex(({ observation }) => observation.koi_id === file.selection.neighbour);

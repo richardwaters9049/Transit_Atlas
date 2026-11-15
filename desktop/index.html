@@ -60,6 +60,7 @@
               <div data-arrival="3"><h2 id="plot-title">Kepler signals</h2><p id="projection"></p></div>
               <div class="plot-actions" data-arrival="4">
                 <button class="quiet" id="run-stability" type="button" aria-pressed="false" disabled>Explore uncertainty</button>
+                <button class="quiet" id="check-exact" type="button" aria-pressed="false" disabled>Check exact bounds</button>
                 <button class="quiet" id="compare-release" type="button" aria-pressed="false" disabled>Compare releases</button>
                 <button class="quiet" id="audit-projection" type="button" aria-pressed="false" disabled>Audit projection</button>
                 <button id="example" class="quiet" type="button" aria-pressed="false" disabled>3D ranking example</button>
@@ -67,6 +68,11 @@
               </div>
             </header>
             <p class="plot-status" id="plot-status" role="status" hidden></p>
+            <div id="exact-controls" class="release-controls" data-arrival="4" hidden>
+              <button class="quiet" id="exact-catalogue" type="button" aria-pressed="false">Catalogue values</button>
+              <button class="quiet" id="exact-witness" type="button" aria-pressed="false">Show witness</button>
+              <output id="exact-readout"></output>
+            </div>
             <div id="audit-controls" class="release-controls audit-controls" data-arrival="4" hidden>
               <label for="audit-filter">Shared top-five neighbours</label>
               <select class="quiet" id="audit-filter">
@@ -121,6 +127,15 @@
             </header>
             <div class="inspector-scroll" id="inspector-scroll">
               <p id="uncertainty" class="notice" data-arrival="4" hidden></p>
+              <details id="exact-inspector" class="inspector-section" data-arrival="5" open hidden>
+                <summary>Rank sensitivity result</summary>
+                <div class="detail inspector-body">
+                  <h3 id="exact-outcome"></h3>
+                  <p id="exact-gap"></p>
+                  <div id="exact-measurements"></div>
+                  <p class="footnote" id="exact-source"></p>
+                </div>
+              </details>
               <details id="audit-inspector" class="inspector-section" data-arrival="5" open hidden>
                 <summary>Closest in 3D</summary>
                 <div class="detail audit-detail inspector-body">

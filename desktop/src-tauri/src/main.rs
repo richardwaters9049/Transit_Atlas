@@ -15,6 +15,25 @@ fn neighbours(query_id: String, state: State<'_, Atlas>) -> Result<Value, String
 }
 
 #[tauri::command]
+fn exact_sensitivity(query_id: String, state: State<'_, Atlas>) -> Result<Value, String> {
+    let report = state.exact_sensitivity(&query_id)?;
+    if std::env::var("TRANSIT_ATLAS_TRACE").as_deref() == Ok("1") {
+        println!(
+            "[Transit Atlas] {} · exact bounds · {:?} · {} → {} · gap {:.6}",
+            report.query,
+            report.status,
+            report.nominal_nearest,
+            report
+                .witness
+                .as_ref()
+                .map_or(report.nominal_nearest, |witness| witness.nearest()),
+            report.minimum_gap,
+        );
+    }
+    serde_json::to_value(report).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 async fn projection_audit(app: tauri::AppHandle) -> Result<Value, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let atlas = app.state::<Atlas>();
@@ -69,6 +88,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             catalogue,
             neighbours,
+            exact_sensitivity,
             projection_audit,
             stability,
             compare_release,

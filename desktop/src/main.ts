@@ -1,6 +1,7 @@
-import { dispositionColours, dispositionLabels, getCatalogue, getNeighbours, getProjectionAudit, getReleaseComparison, getStability } from "./model";
-import type { CandidateAudit, Catalogue, Disposition, Lookup, Neighbour, Observation, Position, ProjectionAudit, ReleaseComparison, Stability } from "./model";
+import { dispositionColours, dispositionLabels, getCatalogue, getExactSensitivity, getNeighbours, getProjectionAudit, getReleaseComparison, getStability } from "./model";
+import type { CandidateAudit, Catalogue, Disposition, ExactSensitivity, Lookup, Neighbour, Observation, Position, ProjectionAudit, ReleaseComparison, Stability } from "./model";
 import { auditGroup, auditGroups, auditTable, readAuditFilter, type AuditFilter } from "./projection-audit";
+import { exactDescription, exactMeasurements } from "./exact-view";
 import { releaseMeasurements } from "./release-view";
 import { checkStudy, makeStudy, openStudyFile, parseStudy, saveStudyFile } from "./study-file";
 import type { StudyView } from "./study-file";
@@ -32,6 +33,11 @@ const plotStatus = byId("plot-status");
 const scenarioControls = byId("scenario-controls");
 const scenarioSlider = byId<HTMLInputElement>("scenario-slider");
 const scenarioReadout = byId("scenario-readout");
+const exactButton = byId<HTMLButtonElement>("check-exact");
+const exactControls = byId("exact-controls");
+const exactCatalogue = byId<HTMLButtonElement>("exact-catalogue");
+const exactWitness = byId<HTMLButtonElement>("exact-witness");
+const exactInspector = byId<HTMLDetailsElement>("exact-inspector");
 const expandButton = byId<HTMLButtonElement>("expand-plot");
 const plotPanel = expandButton.closest<HTMLElement>(".plot-panel")!;
 const plotModal = byId<HTMLDialogElement>("plot-modal");
@@ -83,6 +89,9 @@ let focused = false;
 let study: Stability | undefined;
 let pendingStudy: Lookup | undefined;
 let scenario = 0;
+let exactReport: ExactSensitivity | undefined;
+let pendingExact: Lookup | undefined;
+let showingWitness = false;
 let releaseReport: ReleaseComparison | undefined;
 let pendingRelease: Lookup | undefined;
 let showingEarlier = false;
@@ -143,7 +152,8 @@ function drawLookup(result: Lookup) {
     byId("audit-selection").textContent = `${audit.shared}/5 shared · ${number.format(audit.eligible_references)} eligible references${outsideFilter ? " · Outside filter" : ""}`;
     byId("audit-table").replaceChildren(auditTable(audit));
   }
-  const view = releaseReport ? showingEarlier ? "DR24" : "Cumulative" : scenario ? `Scenario ${scenario}` : "";
+  const view = releaseReport ? showingEarlier ? "DR24" : "Cumulative"
+    : showingWitness ? "Witness" : scenario ? `Scenario ${scenario}` : "";
   const label = view ? `${view} · ${result.query.koi_id}` : result.query.koi_id;
   summary.textContent = `${label} · ${number.format(result.eligible_references)} eligible references · ${result.same_host_excluded} same-star exclusions`;
   const flags = [];
@@ -237,6 +247,13 @@ function clearStudy() {
   study = undefined;
   pendingStudy = undefined;
   scenario = 0;
+  exactReport = undefined;
+  pendingExact = undefined;
+  showingWitness = false;
+  exactControls.hidden = exactInspector.hidden = true;
+  exactButton.disabled = !lookup || example;
+  exactButton.textContent = "Check exact bounds";
+  exactButton.setAttribute("aria-pressed", "false");
   releaseReport = undefined;
   pendingRelease = undefined;
   showingEarlier = false;
@@ -291,7 +308,7 @@ function variationLookup(nominal: Lookup, query: Observation, neighbours: Neighb
 async function runStability(prefetched?: Stability, initialScenario = 1) {
   const current = lookup;
   if (!current || example || pendingStudy) return;
-  if (releaseReport || pendingRelease || auditData || auditRequest) setExample(false);
+  if (releaseReport || pendingRelease || auditData || auditRequest || exactReport || pendingExact) setExample(false);
   releaseFallback.hidden = true;
   pendingStudy = current;
   stabilityButton.disabled = true;
@@ -349,6 +366,80 @@ async function runStability(prefetched?: Stability, initialScenario = 1) {
   }
 }
 
+function selectExact(witness: boolean) {
+  if (!exactReport || !lookup) return;
+  const selected = witness ? exactReport.witness : null;
+  showingWitness = Boolean(selected);
+  active = 0;
+  exactCatalogue.setAttribute("aria-pressed", String(!showingWitness));
+  exactWitness.setAttribute("aria-pressed", String(showingWitness));
+  const result = selected ? variationLookup(lookup, selected.query, selected.neighbours) : lookup;
+  byId("exact-readout").textContent = `Nearest ${result.neighbours[0].observation.koi_id}`;
+  drawLookup(result);
+}
+
+function showExact(report: ExactSensitivity, current: Lookup, initialWitness: boolean) {
+  exactReport = report;
+  plotStatus.hidden = true;
+  plotTitle.textContent = "Exact rank sensitivity";
+  byId("results-title").textContent = "8D neighbours";
+  exactButton.textContent = "Back to catalogue";
+  exactButton.setAttribute("aria-pressed", "true");
+  exactControls.hidden = exactInspector.hidden = false;
+  exactInspector.open = true;
+  exactWitness.hidden = !report.witness;
+  byId("exact-outcome").textContent = exactDescription(report);
+  const gap = (value: number) => Math.abs(value) < 0.001 ? value.toExponential(3) : value.toFixed(6);
+  byId("exact-gap").textContent = `Squared-distance gap against ${report.challenger} · Catalogue ${gap(report.nominal_gap)} · Minimum ${gap(report.minimum_gap)}`;
+  byId("exact-measurements").replaceChildren(exactMeasurements(report));
+  byId("exact-source").textContent =
+    `Quoted errors retrieved ${report.source_date}. The check varies the query within the bounds and keeps references fixed. Measurement correlations are unknown.`;
+
+  if (report.witness) {
+    const references = new Map<string, Observation>();
+    for (const item of [...current.neighbours, ...report.witness.neighbours]) {
+      references.set(item.observation.koi_id, item.observation);
+    }
+    const cataloguePoint = { ...point(current.query, candidateColour, true), id: "Catalogue" };
+    const witnessPoint = { ...point(report.witness.query, changedColour, true), id: "Witness" };
+    scene?.showStudy(
+      [witnessPoint, cataloguePoint], [...references.values()].map(row => point(row, neighbourColour)), cataloguePoint, true,
+    );
+    setFocus(true);
+    drawLegend([["Catalogue position", candidateColour], ["Witness", changedColour], ["8D neighbours", neighbourColour]]);
+    byId("controls").textContent = "Drag to orbit · Select a measurement point";
+    projectedLines.textContent = "The line connects the catalogue and witness positions in the PCA view.";
+  }
+  selectExact(initialWitness);
+  arrive([exactControls, exactInspector], 7);
+}
+
+async function runExact() {
+  const current = lookup;
+  if (!current || example || pendingExact) return;
+  if (study || pendingStudy || releaseReport || pendingRelease || auditData || auditRequest) setExample(false);
+  releaseFallback.hidden = true;
+  pendingExact = current;
+  exactButton.disabled = true;
+  plotStatus.dataset.loading = "";
+  plotStatus.textContent = "Checking the full quoted ranges against each reference…";
+  plotStatus.hidden = false;
+  try {
+    const report = await getExactSensitivity(current.query.koi_id);
+    if (lookup !== current || pendingExact !== current) return;
+    showExact(report, current, Boolean(report.witness));
+    inspectorScroll.scrollTop = 0;
+  } catch (problem) {
+    if (pendingExact === current) plotStatus.textContent = String(problem);
+  } finally {
+    if (pendingExact === current) {
+      pendingExact = undefined;
+      exactButton.disabled = false;
+      delete plotStatus.dataset.loading;
+    }
+  }
+}
+
 function selectRelease(earlier: boolean) {
   if (!releaseReport || !lookup) return;
   const result = releaseReport;
@@ -367,7 +458,7 @@ function selectRelease(earlier: boolean) {
 async function runRelease(prefetched?: ReleaseComparison, initialEarlier = true) {
   const current = lookup;
   if (!current || example || pendingRelease) return;
-  if (study || pendingStudy || auditData || auditRequest) setExample(false);
+  if (study || pendingStudy || auditData || auditRequest || exactReport || pendingExact) setExample(false);
   pendingRelease = current;
   releaseButton.disabled = true;
   plotStatus.dataset.loading = "";
@@ -423,8 +514,10 @@ async function runRelease(prefetched?: ReleaseComparison, initialEarlier = true)
 function highlight(result: Lookup) {
   const neighbours = result.neighbours.map((item, index) =>
     point(item.observation, index === active ? activeColour : neighbourColour));
-  const queryPoint = point(result.query, releaseReport ? showingEarlier ? historicalColour : cumulativeColour : candidateColour);
+  const queryPoint = point(result.query, releaseReport ? showingEarlier ? historicalColour : cumulativeColour
+    : showingWitness ? changedColour : candidateColour);
   if (releaseReport) queryPoint.id = showingEarlier ? "DR24" : "Cumulative";
+  else if (exactReport?.witness) queryPoint.id = showingWitness ? "Witness" : "Catalogue";
   else if (scenario) queryPoint.id = `Scenario ${scenario}`;
   const projected = auditData?.byId.get(result.query.koi_id)?.projected_neighbours.flatMap((item, index) =>
     item.full_rank > 5 ? [{ position: item.position, colour: projectedColour, id: `P${index + 1}` }] : []);
@@ -436,7 +529,7 @@ function setFocus(value: boolean) {
   focused = value;
   focusButton.setAttribute("aria-pressed", String(value));
   focusButton.textContent = value ? "Show full plot" : releaseReport ? "Focus on releases" : study ? "Focus on scenarios"
-    : auditData ? "Focus on both rankings" : "Focus on neighbours";
+    : exactReport?.witness ? "Focus on both positions" : auditData ? "Focus on both rankings" : "Focus on neighbours";
   scene?.setFocus(value);
 }
 
@@ -492,7 +585,7 @@ function showAudit(data: AuditData, filter: AuditFilter) {
 
 async function runAudit() {
   if (!lookup || auditRequest) return;
-  if (example || study || pendingStudy || releaseReport || pendingRelease) setExample(false);
+  if (example || study || pendingStudy || releaseReport || pendingRelease || exactReport || pendingExact) setExample(false);
   const request = Symbol();
   auditRequest = request;
   auditButton.disabled = true;
@@ -522,7 +615,8 @@ function showDetail(result: Lookup, neighbour: Neighbour) {
   const table = document.createElement("table");
   table.setAttribute("aria-label", "Feature contributions to squared distance");
   const heading = table.createTHead().insertRow();
-  ["Measurement", releaseReport ? showingEarlier ? "DR24" : "Cumulative" : scenario ? "Scenario" : "Query", "Neighbour", "Share"].forEach((label) =>
+  ["Measurement", releaseReport ? showingEarlier ? "DR24" : "Cumulative"
+    : showingWitness ? "Witness" : scenario ? "Scenario" : "Query", "Neighbour", "Share"].forEach((label) =>
     heading.append(element("th", label)));
   const body = table.createTBody();
   const ordered = catalogue.features.map((feature, index) => ({ feature, index }))
@@ -612,20 +706,23 @@ async function runLookup(id: string, openRelease = false, prefetched?: Promise<L
     if (request !== latestRequest) return;
     const reopenStudy = Boolean(study || pendingStudy);
     const reopenRelease = openRelease || Boolean(releaseReport || pendingRelease);
+    const reopenExact = Boolean(exactReport || pendingExact);
     lookup = result;
     active = 0;
     query.value = result.query.koi_id;
-    if (example || reopenStudy || reopenRelease) setExample(false);
+    if (example || reopenStudy || reopenRelease || reopenExact) setExample(false);
     else {
       if (!auditRequest) plotStatus.hidden = true;
       releaseFallback.hidden = true;
       stabilityButton.disabled = false;
       releaseButton.disabled = false;
+      exactButton.disabled = false;
       auditButton.disabled = Boolean(auditRequest);
       drawLookup(result);
     }
     if (reopenRelease) await runRelease();
     else if (reopenStudy) await runStability();
+    else if (reopenExact) await runExact();
   } catch (problem) {
     if (request !== latestRequest) return;
     error.textContent = String(problem);
@@ -652,6 +749,7 @@ async function saveCurrentStudy() {
   if (!lookup || !visibleLookup || fileBusy) return;
   const view: StudyView = releaseReport ? { kind: "release", release: showingEarlier ? "DR24" : "Cumulative" }
     : study ? { kind: "uncertainty", scenario } : auditData ? { kind: "projection", filter: auditFilter }
+    : exactReport ? { kind: "exact", witness: showingWitness }
     : { kind: "catalogue" };
   const selection = {
     candidate: lookup.query.koi_id,
@@ -660,7 +758,7 @@ async function saveCurrentStudy() {
     camera: scene?.captureView() ?? null,
   };
   const file = makeStudy(selection, catalogue, lookup, visibleLookup, study, releaseReport,
-    auditData?.byId.get(selection.candidate));
+    auditData?.byId.get(selection.candidate), exactReport);
   fileBusy = true;
   syncStudyButtons();
   studyMessage("");
@@ -694,6 +792,7 @@ async function restoreStudy() {
     let uncertaintyReport: Stability | undefined;
     let comparison: ReleaseComparison | undefined;
     let projection: AuditData | undefined;
+    let exact: ExactSensitivity | undefined;
     if (view.kind === "uncertainty") {
       uncertaintyReport = await getStability(candidate);
       if (view.scenario > uncertaintyReport.scenarios.length) {
@@ -709,9 +808,15 @@ async function restoreStudy() {
     } else if (view.kind === "projection") {
       projection = await loadAudit();
       if (!projection.byId.has(candidate)) throw new Error("This candidate has no projection audit.");
+    } else if (view.kind === "exact") {
+      exact = await getExactSensitivity(candidate);
+      if (view.witness) {
+        if (!exact.witness) throw new Error("The saved witness is unavailable.");
+        visible = variationLookup(nominal, exact.witness.query, exact.witness.neighbours);
+      }
     }
     const rank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison,
-      projection?.byId.get(candidate));
+      projection?.byId.get(candidate), exact);
     if (request !== latestRequest) {
       throw new Error("The active search changed. Open the study again to restore it.");
     }
@@ -727,6 +832,7 @@ async function restoreStudy() {
     if (view.kind === "uncertainty") await runStability(uncertaintyReport, view.scenario);
     else if (view.kind === "release") await runRelease(comparison, view.release === "DR24");
     else if (view.kind === "projection" && projection) showAudit(projection, view.filter);
+    else if (view.kind === "exact" && exact) showExact(exact, nominal, view.witness);
     if (rank !== active) {
       active = rank;
       drawLookup(visible);
@@ -773,6 +879,7 @@ async function start(opening: ReturnType<typeof showOpening>) {
     const { SignalScene } = plotRenderer;
     scene = new SignalScene(byId("plot"), byId("axes"), byId("point-markers"), (id) => {
       if (releaseReport) selectRelease(id === "DR24");
+      else if (exactReport?.witness) selectExact(id === "Witness");
       else if (study) selectScenario(Number(id));
       else void runLookup(id);
     });
@@ -805,6 +912,12 @@ stabilityButton.addEventListener("click", () => {
   if (study) setExample(false);
   else void runStability();
 });
+exactButton.addEventListener("click", () => {
+  if (exactReport) setExample(false);
+  else void runExact();
+});
+exactCatalogue.addEventListener("click", () => selectExact(false));
+exactWitness.addEventListener("click", () => selectExact(true));
 releaseButton.addEventListener("click", () => {
   if (releaseReport) setExample(false);
   else void runRelease();
