@@ -44,10 +44,10 @@ This is a display guide derived from the catalogue duration, not a transit fit o
 Kepler light-curve files contain an integer quality flag for each cadence. A processing mask $M$ accepts cadence $i$ when
 
 $$
-\operatorname{bitand}(q_i,M)=0,
+\mathrm{bitand}(q_i,M)=0,
 $$
 
-where $\operatorname{bitand}(q_i,M)$ denotes the bitwise AND of the cadence quality flag and the selected mask. The current reference implementation uses Lightkurve's Kepler default quality bitmask, **1,130,799**, which removes cadences with severe quality issues. The selected mask is stored in the derived document.
+where $\mathrm{bitand}(q_i,M)$ denotes the bitwise AND of the cadence quality flag and the selected mask. The current reference implementation uses Lightkurve's Kepler default quality bitmask, **1,130,799**, which removes cadences with severe quality issues. The selected mask is stored in the derived document.
 
 The FITS source and the complete time, flux, uncertainty, quality and cadence-number arrays remain unchanged. Filtering applies only when deriving the plotted series. This allows another analyst to choose a different mask and reproduce the result.
 
@@ -58,13 +58,13 @@ The selected flux column is `pdcsap_flux` by default. The importer also permits 
 For one product, define the accepted finite cadence set
 
 $$
-S = \{i \mid \operatorname{bitand}(q_i,M)=0,\;\operatorname{isfinite}(t_i),\;\operatorname{isfinite}(F_i)\}.
+S = \{i \mid \mathrm{bitand}(q_i,M)=0,\;\mathrm{isfinite}(t_i),\;\mathrm{isfinite}(F_i)\}.
 $$
 
 The baseline is the median accepted flux
 
 $$
-F_0 = \operatorname{median}_{i\in S}(F_i).
+F_0 = \mathrm{median}_{i\in S}(F_i).
 $$
 
 The relative flux displayed in parts per million is
