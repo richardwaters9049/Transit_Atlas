@@ -65,6 +65,8 @@ export function launchOrbit(container: HTMLElement): () => void {
   system.add(planet.object);
 
   const orbit = new THREE.Group();
+  // The tilted orbit projects slightly high; lower it a touch to keep its visual centre on the planet.
+  orbit.position.y = -0.075;
   orbit.rotation.set(1.04, 0.44, -0.31);
   system.add(orbit);
   const orbitRadius = 1.77;
@@ -96,12 +98,14 @@ export function launchOrbit(container: HTMLElement): () => void {
   const baseline = performance.now();
   renderer.setAnimationLoop(() => {
     const elapsed = (performance.now() - baseline) / 1000;
-    const approach = THREE.MathUtils.smoothstep(elapsed, 0, 1.8);
+    const approach = THREE.MathUtils.smoothstep(elapsed, 0, 1.75);
+    const settle = THREE.MathUtils.smoothstep(elapsed, 0.45, 2.1);
     const pass = THREE.MathUtils.smoothstep(elapsed, 1.15, 5.4);
-    system.position.set(Math.min(2.35, camera.aspect * 1.22) + 0.45 * (1 - approach) - 0.1 * pass,
+    system.position.set(Math.min(2.35, camera.aspect * 1.22) + 0.34 * (1 - approach) - 0.1 * pass,
       0.15 - 0.13 * pass, 0);
-    system.rotation.y = -0.35 + 0.60 * pass;
-    system.scale.setScalar(0.61 + 0.40 * approach + 0.10 * pass);
+    // Turn the orbital plane towards the viewer as the planet scales into its final position.
+    system.rotation.set(0.16 * (1 - settle), -1.25 + 1.5 * settle, 0.08 * (1 - settle));
+    system.scale.setScalar(0.16 + 0.84 * approach + 0.10 * pass);
     planet.rotate(elapsed);
     stars.rotation.z = elapsed * 0.023;
     flyby.rotation.z = 0.38 + elapsed * 1.16;
