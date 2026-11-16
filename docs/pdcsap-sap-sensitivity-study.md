@@ -2,7 +2,7 @@
 
 ## Status and purpose
 
-**Status: experiment design; no alternative processing results have been claimed.**
+**Status: paired offline analysis completed; SAP was found unsuitable for depth inference without a separately specified detrending method.**
 
 This document specifies the first controlled comparison for research-roadmap milestone 2, step 3. It compares the two flux columns already present in each pinned Kepler DR25 Q4 FITS product:
 
@@ -113,4 +113,48 @@ A later study may compare leave-one-quarter-out results, but the current pinned 
 
 ## Decision after this design
 
-Proceed to an offline paired-flux analysis using the pinned FITS bytes. Keep the estimator and ranking substitution exactly as specified above unless a concrete data-quality failure is found; if it is, document the failure and revise the protocol before inspecting comparative ranking outcomes.
+The paired-flux analysis has now been run against the pinned FITS bytes. Its measured results, reliability assessment, ranking comparisons and reproducible outputs are recorded below.
+
+
+## Executed results · 16 November 2026
+
+The paired analysis was run offline against the two pinned FITS files. The shared cadence selection retained **4,108 of 4,397 cadences** for each target: 4,116 passed the quality mask, 281 were quality-rejected, and 8 additional cadences were excluded because at least one of time/SAP/PDCSAP was non-finite. The same 4,108 cadence numbers and phase values were used for both flux variants.
+
+| KOI | Catalogue depth (ppm) | PDCSAP windowed median (ppm) | SAP windowed median (ppm) | SAP − PDCSAP (ppm) |
+| --- | ---: | ---: | ---: | ---: |
+| K00115.03 | 23.2 | 17.8638 | 22.3829 | +4.5191 |
+| K02961.01 | 33.5 | 46.4210 | 111.6763 | +65.2553 |
+
+The SAP values are **not reliable transit-depth estimates**. Visual review of the shared-axis time-series and phase-folded plot shows large coherent variations that are absent or strongly reduced in PDCSAP. The normalized flux MAD ratio (SAP / PDCSAP) was 6.46x in transit and 6.56x out of transit for K00115.03; for K02961.01 it was 8.01x and 7.43x respectively. The median reported per-cadence uncertainty remained approximately 84 ppm and 74 ppm for the two targets, respectively, in both flux columns. This supports the interpretation that SAP's much larger scatter is not explained by the quoted cadence uncertainties alone. Because the global out-of-transit median is affected by these broad trends, the SAP depth and SAP-derived ranking are retained as diagnostic outputs only.
+
+The PDCSAP windowed medians are also descriptive statistics, not fitted physical transit depths. They differ from the catalogue depths, which are independently catalogued measurements. This experiment does not establish that either estimate is more physically accurate.
+
+### KNN results
+
+The existing catalogue ranking and the ranking after substituting the PDCSAP windowed-median depth were compared using the same frozen training scaler, labelled training pool, host exclusion, and all seven unchanged non-depth features.
+
+- **K00115.03:** the nearest neighbour remained K02961.01. The top-five order changed from K02961.01, K03172.02, K06871.01, K02636.01, K07709.01 to K02961.01, K06871.01, K02636.01, K03172.02, K04288.03.
+- **K02961.01:** the nearest neighbour remained K06871.01. The top-five order changed from K06871.01, K04383.01, K06419.01, K07709.01, K02623.01 to K06871.01, K04383.01, K02722.03, K07709.01, K02623.01.
+
+The SAP-only rankings move more substantially, but they are not scientifically interpretable because the SAP depth inputs fail the variability diagnostic above. They must not be presented as an alternative trustworthy ranking.
+
+### Reproducible outputs
+
+The analysis is implemented in reference/flux_sensitivity.py and tested in reference/test_flux_sensitivity.py. Run from the repository root:
+
+    .venv/bin/python reference/flux_sensitivity.py
+    .venv/bin/python -m unittest reference.test_flux_sensitivity
+
+Generated outputs:
+
+- data/generated/flux-sensitivity/analysis.json — source FITS checksums and product metadata, selection counts, both complete cadence series, per-window flux MAD and uncertainty summaries, processing configuration, frozen scaler values, and full top-five KNN distances/contributions.
+- data/generated/flux-sensitivity/report.md — concise results and interpretation.
+- data/generated/flux-sensitivity/sap-pdcsap-comparison.png — shared-axis time-series and phase-folded comparison.
+
+Seven dedicated tests cover paired cadence identity, common phase selection, invalid flux/depth handling, missing uncertainties, host exclusion, distance evidence, and deterministic numerical output. The full reference suite also passes.
+
+### Scientific conclusion and next experiment
+
+This comparison demonstrates that raw SAP is not an appropriate alternative depth input for the current global-median estimator without additional trend treatment. The application should continue to use PDCSAP. Do not add an improvised detrending step to make SAP appear comparable.
+
+The next useful scientific comparison should therefore be separately designed around a validated alternative, such as a controlled PDCSAP detrending/flattening method with explicit window selection and transit-preservation checks, or a multi-quarter consistency analysis after additional quarters for the same KOIs have been imported. The current two-target Q4 dataset cannot support leave-one-quarter-out validation.
