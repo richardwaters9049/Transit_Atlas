@@ -13,7 +13,8 @@ fn validated_candidate(document: &str) -> Result<String, String> {
     }
     let data: serde_json::Value = serde_json::from_str(document)
         .map_err(|_| "The selected file does not contain valid JSON.")?;
-    if data["schema"].as_str() != Some("transit-atlas.study") || data["version"].as_u64() != Some(1)
+    if data["schema"].as_str() != Some("transit-atlas.study")
+        || !matches!(data["version"].as_u64(), Some(1 | 2))
     {
         return Err("This file uses an unsupported Transit Atlas study format.".into());
     }
@@ -110,6 +111,7 @@ mod tests {
 
     const DOCUMENT: &str =
         r#"{"schema":"transit-atlas.study","version":1,"selection":{"candidate":"K00005.01"}}"#;
+    const DOCUMENT_V2: &str = r#"{"schema":"transit-atlas.study","version":2,"selection":{"candidate":"K00115.03"},"provenance":{"light_curves":[]}}"#;
 
     #[test]
     fn saves_and_reopens_a_local_document() {
@@ -122,8 +124,17 @@ mod tests {
     }
 
     #[test]
+    fn saves_and_reopens_a_version_two_document() {
+        let folder = tempfile::tempdir().unwrap();
+        let path = folder.path().join("K00115.03.atlas.json");
+        write_study(&path, DOCUMENT_V2).unwrap();
+        assert_eq!(read_study(&path).unwrap(), DOCUMENT_V2);
+        assert_eq!(validated_candidate(DOCUMENT_V2).unwrap(), "K00115.03");
+    }
+
+    #[test]
     fn rejects_incompatible_and_oversized_documents() {
-        assert!(validated_candidate(&DOCUMENT.replace("\"version\":1", "\"version\":2")).is_err());
+        assert!(validated_candidate(&DOCUMENT.replace("\"version\":1", "\"version\":3")).is_err());
         assert!(validated_candidate(&DOCUMENT.replace("K00005.01", "../elsewhere")).is_err());
         let folder = tempfile::tempdir().unwrap();
         let path = folder.path().join("large.json");

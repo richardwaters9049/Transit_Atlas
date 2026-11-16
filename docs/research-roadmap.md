@@ -104,9 +104,10 @@ The first implementation slice now covers archive ingestion, reproducible phase 
 - [x] Add an offline replay test that re-reads each pinned FITS file, recalculates the folded series and compares every point with the saved document.
 - [x] Add a desktop inspector panel that loads the bundled candidate and selected reference, and draws their independently folded Q4 series.
 - [x] Launch the desktop app and visually review the two curves, chart scaling and narrow transit-duration window. The candidate and reference plots were inspected in the native macOS app; the user also checked the application at multiple window sizes.
-- [ ] Add a study-file extension that records the selected light-curve product and processing fingerprint alongside the existing ranking evidence.
+- [x] Add study-file schema version 2 with selected light-curve product identity, signal ephemeris and processing fingerprint alongside the existing ranking evidence. Reopening a v2 study reloads the recorded KOI/quarter and rejects a changed product or folded result. Version 1 studies remain readable.
+- [ ] Complete a native macOS save/open check with the pinned candidate and reference products, including a changed or missing product, and confirm the active investigation is not replaced on failure.
 
-The importer has been exercised through the public MAST AWS mirror for both pinned products. The Python suite now has 28 passing tests, including checksum verification and offline recomputation of every folded point from each original FITS file. The desktop plots have been visually reviewed, and a screenshot of the candidate/reference inspector is included in the README. Persistence of the selected light-curve provenance in study files remains open.
+The importer has been exercised through the public MAST AWS mirror for both pinned products. The Python suite has 28 passing tests, including checksum verification and offline recomputation of every folded point from each original FITS file. The desktop plots have been visually reviewed, and a screenshot of the candidate/reference inspector is included in the README. Study-file v2 implementation and automated replay checks are in progress on `feat/study-lightcurve-provenance`; the native macOS save/open check remains outstanding.
 
 [Kepler cadence and quality flags](https://lightkurve.github.io/lightkurve/tutorials/2-creating-light-curves/2-2-kepler-noise-1-data-gaps-and-quality-flags.html) · [Lightkurve documentation](https://lightkurve.github.io/lightkurve/)
 

@@ -3,7 +3,7 @@ import type { CandidateAudit, Catalogue, Disposition, ExactSensitivity, LightCur
 import { auditGroup, auditGroups, auditTable, readAuditFilter, type AuditFilter } from "./projection-audit";
 import { exactDescription, exactMeasurements } from "./exact-view";
 import { releaseMeasurements } from "./release-view";
-import { checkStudy, makeStudy, openStudyFile, parseStudy, saveStudyFile } from "./study-file";
+import { checkStudy, makeStudy, openStudyFile, parseStudy, saveStudyFile, studyLightCurve } from "./study-file";
 import type { StudyView } from "./study-file";
 import type { SignalScene } from "./scene";
 import { showOpening } from "./opening";
@@ -947,22 +947,39 @@ function studyMessage(message: string, failed = false) {
 
 async function saveCurrentStudy() {
   if (!lookup || !visibleLookup || fileBusy) return;
+  const savedLookup = lookup;
+  const savedVisible = visibleLookup;
+  const savedActive = active;
+  const request = latestRequest;
+  const selectedNeighbour = visibleLookup.neighbours[active]?.observation;
+  if (!selectedNeighbour) return;
   const view: StudyView = releaseReport ? { kind: "release", release: showingEarlier ? "DR24" : "Cumulative" }
     : study ? { kind: "uncertainty", scenario } : auditData ? { kind: "projection", filter: auditFilter }
     : exactReport ? { kind: "exact", witness: showingWitness }
     : { kind: "catalogue" };
   const selection = {
     candidate: lookup.query.koi_id,
-    neighbour: visibleLookup.neighbours[active].observation.koi_id,
+    neighbour: selectedNeighbour.koi_id,
     view,
     camera: scene?.captureView() ?? null,
   };
-  const file = makeStudy(selection, catalogue, lookup, visibleLookup, study, releaseReport,
-    auditData?.byId.get(selection.candidate), exactReport);
   fileBusy = true;
   syncStudyButtons();
   studyMessage("");
   try {
+    const lightCurves: LightCurveDocument[] = [];
+    if (selection.candidate === "K00115.03") {
+      lightCurves.push(await loadLightCurve(selection.candidate));
+      if (selection.neighbour === "K02961.01") {
+        lightCurves.push(await loadLightCurve(selection.neighbour));
+      }
+    }
+    if (request !== latestRequest || lookup !== savedLookup ||
+        visibleLookup !== savedVisible || active !== savedActive) {
+      throw new Error("The active investigation changed while the study was being prepared. Save it again.");
+    }
+    const file = makeStudy(selection, catalogue, savedLookup, savedVisible, study, releaseReport,
+      auditData?.byId.get(selection.candidate), exactReport, lightCurves);
     const name = await saveStudyFile(file);
     if (name) studyMessage(`Saved ${name}`);
   } catch (problem) {
@@ -1015,8 +1032,13 @@ async function restoreStudy() {
         visible = variationLookup(nominal, exact.witness.query, exact.witness.neighbours);
       }
     }
+    const replayedLightCurves = file.lightCurves === null
+      ? []
+      : await Promise.all(file.lightCurves.map(({ identity, product }) =>
+        getLightCurve(identity.koi_id, product.quarter)));
+    const lightCurveProvenance = replayedLightCurves.map(studyLightCurve);
     const rank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison,
-      projection?.byId.get(candidate), exact);
+      projection?.byId.get(candidate), exact, lightCurveProvenance);
     if (request !== latestRequest) {
       throw new Error("The active search changed. Open the study again to restore it.");
     }

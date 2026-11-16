@@ -67,6 +67,7 @@ export interface FoldedLightCurvePoint {
 export interface LightCurveDocument {
   schema: "transit-atlas.kepler-lightcurve";
   version: 1;
+  processing_fingerprint: string;
   identity: { koi_id: string; host_id: number; signal_role: "candidate" | "reference" };
   ephemeris: {
     period_days: number;

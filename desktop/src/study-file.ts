@@ -1,9 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CandidateAudit, Catalogue, ExactSensitivity, Lookup, Position, ReleaseComparison, Stability } from "./model";
+import type {
+  CandidateAudit,
+  Catalogue,
+  ExactSensitivity,
+  LightCurveDocument,
+  Lookup,
+  Position,
+  ReleaseComparison,
+  Stability,
+} from "./model";
 import { readAuditFilter, type AuditFilter } from "./projection-audit";
 
 const SCHEMA = "transit-atlas.study";
-const VERSION = 1;
+const VERSION = 2;
 const MODEL = "host-split-zscore-pca-v1";
 
 export interface StudyCamera {
@@ -24,6 +33,37 @@ export interface StudySelection {
   neighbour: string;
   view: StudyView;
   camera: StudyCamera | null;
+}
+
+export interface StudyLightCurveProvenance {
+  identity: {
+    koi_id: string;
+    host_id: number;
+    signal_role: "candidate" | "reference";
+  };
+  product: {
+    archive: string;
+    mission: string;
+    data_uri: string;
+    product_filename: string;
+    source_sha256: string;
+    source_bytes: number;
+    author: string;
+    quarter: number;
+    data_release: number;
+    cadence: string;
+    time_format: string;
+    time_scale: string;
+    time_unit: string;
+    flux_unit: string;
+  };
+  ephemeris: {
+    period_days: number;
+    epoch_bkjd: number;
+    duration_hours: number;
+    epoch_definition: string;
+  };
+  processing_fingerprint: string;
 }
 
 function evidence(
@@ -59,6 +99,40 @@ function evidence(
   };
 }
 
+export function studyLightCurve(document: LightCurveDocument): StudyLightCurveProvenance {
+  const { identity, source, ephemeris, processing_fingerprint: fingerprint } = document;
+  return readStudyLightCurve({
+    identity: {
+      koi_id: identity.koi_id,
+      host_id: identity.host_id,
+      signal_role: identity.signal_role,
+    },
+    product: {
+      archive: source.archive,
+      mission: source.mission,
+      data_uri: source.data_uri,
+      product_filename: source.product_filename,
+      source_sha256: source.sha256,
+      source_bytes: source.bytes,
+      author: source.author,
+      quarter: source.quarter,
+      data_release: source.data_release,
+      cadence: source.cadence,
+      time_format: source.time_format,
+      time_scale: source.time_scale,
+      time_unit: source.time_unit,
+      flux_unit: source.flux_unit,
+    },
+    ephemeris: {
+      period_days: ephemeris.period_days,
+      epoch_bkjd: ephemeris.epoch_bkjd,
+      duration_hours: ephemeris.duration_hours,
+      epoch_definition: ephemeris.epoch_definition,
+    },
+    processing_fingerprint: fingerprint,
+  });
+}
+
 export function makeStudy(
   selection: StudySelection,
   catalogue: Catalogue,
@@ -68,7 +142,10 @@ export function makeStudy(
   comparison?: ReleaseComparison,
   audit?: CandidateAudit,
   exact?: ExactSensitivity,
+  lightCurves: LightCurveDocument[] = [],
 ) {
+  const lightCurveProvenance = lightCurves.map(studyLightCurve);
+  validateLightCurveSelection(lightCurveProvenance, selection.candidate, selection.neighbour);
   return {
     schema: SCHEMA,
     version: VERSION,
@@ -77,6 +154,7 @@ export function makeStudy(
     provenance: {
       catalogue: catalogue.snapshot,
       variation_sha256: uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? exact?.source_sha256 ?? null,
+      light_curves: lightCurveProvenance,
     },
     selection,
     evidence: evidence(catalogue, nominal, visible, uncertainty, comparison, audit, exact),
@@ -101,6 +179,95 @@ function koi(value: unknown): value is string {
 
 function digest(value: unknown): value is string {
   return typeof value === "string" && /^[a-f0-9]{64}$/.test(value) && value.length === 64;
+}
+
+function finite(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function nonEmpty(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function readStudyLightCurve(value: unknown): StudyLightCurveProvenance {
+  const { identity, product, ephemeris, processing_fingerprint: fingerprint } = record(value);
+  const parsedIdentity = record(identity);
+  const parsedProduct = record(product);
+  const parsedEphemeris = record(ephemeris);
+  const {
+    koi_id: koiId,
+    host_id: hostId,
+    signal_role: role,
+  } = parsedIdentity;
+  const {
+    archive, mission, data_uri: dataUri, product_filename: filename,
+    source_sha256: sourceSha, source_bytes: sourceBytes, author,
+    quarter, data_release: dataRelease, cadence, time_format: timeFormat,
+    time_scale: timeScale, time_unit: timeUnit, flux_unit: fluxUnit,
+  } = parsedProduct;
+  const {
+    period_days: period, epoch_bkjd: epoch, duration_hours: duration,
+    epoch_definition: epochDefinition,
+  } = parsedEphemeris;
+
+  if (!koi(koiId) || !Number.isSafeInteger(hostId) || (hostId as number) <= 0 ||
+      (role !== "candidate" && role !== "reference") ||
+      !nonEmpty(archive) || !nonEmpty(mission) || !nonEmpty(dataUri) || !nonEmpty(filename) ||
+      !digest(sourceSha) || !Number.isSafeInteger(sourceBytes) || (sourceBytes as number) <= 0 ||
+      !nonEmpty(author) || !Number.isSafeInteger(quarter) || (quarter as number) <= 0 ||
+      !Number.isSafeInteger(dataRelease) || (dataRelease as number) <= 0 ||
+      !nonEmpty(cadence) || !nonEmpty(timeFormat) || !nonEmpty(timeScale) ||
+      !nonEmpty(timeUnit) || !nonEmpty(fluxUnit) ||
+      !finite(period) || period <= 0 || !finite(epoch) ||
+      !finite(duration) || duration <= 0 || !nonEmpty(epochDefinition) || !digest(fingerprint)) {
+    throw new Error("The study contains invalid Kepler light-curve provenance.");
+  }
+
+  return {
+    identity: { koi_id: koiId, host_id: hostId as number, signal_role: role },
+    product: {
+      archive, mission, data_uri: dataUri, product_filename: filename,
+      source_sha256: sourceSha, source_bytes: sourceBytes as number,
+      author, quarter: quarter as number, data_release: dataRelease as number,
+      cadence, time_format: timeFormat, time_scale: timeScale, time_unit: timeUnit, flux_unit: fluxUnit,
+    },
+    ephemeris: {
+      period_days: period, epoch_bkjd: epoch, duration_hours: duration,
+      epoch_definition: epochDefinition,
+    },
+    processing_fingerprint: fingerprint,
+  };
+}
+
+function validateLightCurveSelection(
+  lightCurves: StudyLightCurveProvenance[],
+  candidate: string,
+  neighbour: string,
+) {
+  if (lightCurves.length > 2) throw new Error("A study cannot contain more than two selected light curves.");
+  const roles = new Set<string>();
+  for (const lightCurve of lightCurves) {
+    const { koi_id: koiId, signal_role: role } = lightCurve.identity;
+    if (roles.has(role)) throw new Error("A study contains duplicate Kepler light-curve roles.");
+    roles.add(role);
+    if ((role === "candidate" && koiId !== candidate) ||
+        (role === "reference" && koiId !== neighbour)) {
+      throw new Error("A saved Kepler light curve does not match the study selection.");
+    }
+  }
+  if (candidate === "K00115.03" && !roles.has("candidate")) {
+    throw new Error("The study is missing the selected candidate light-curve product.");
+  }
+  if (candidate === "K00115.03" && neighbour === "K02961.01" && !roles.has("reference")) {
+    throw new Error("The study is missing the selected reference light-curve product.");
+  }
+}
+
+function readStudyLightCurves(value: unknown, candidate: string, neighbour: string) {
+  if (!Array.isArray(value)) throw new Error("The study is missing its Kepler light-curve provenance list.");
+  const lightCurves = value.map(readStudyLightCurve);
+  validateLightCurveSelection(lightCurves, candidate, neighbour);
+  return lightCurves;
 }
 
 function position(value: unknown): value is Position {
@@ -134,7 +301,7 @@ function readView(value: unknown): StudyView {
 
 export function parseStudy(document: string) {
   const data = record(JSON.parse(document));
-  if (data.schema !== SCHEMA || data.version !== VERSION || data.model !== MODEL) {
+  if (data.schema !== SCHEMA || (data.version !== 1 && data.version !== VERSION) || data.model !== MODEL) {
     throw new Error("This study uses an unsupported version or model.");
   }
   const { candidate, neighbour, view, camera } = record(data.selection);
@@ -147,9 +314,13 @@ export function parseStudy(document: string) {
       (provenance.variation_sha256 !== null && !digest(provenance.variation_sha256))) {
     throw new Error("The study is missing valid data fingerprints.");
   }
+  const lightCurves = data.version === 1
+    ? null
+    : readStudyLightCurves(provenance.light_curves, candidate, neighbour);
   return {
     catalogue,
     variationSha256: provenance.variation_sha256,
+    lightCurves,
     selection: { candidate, neighbour, view: readView(view), camera: readCamera(camera) },
     evidence: record(data.evidence),
   };
@@ -182,12 +353,16 @@ export function checkStudy(
   comparison?: ReleaseComparison,
   audit?: CandidateAudit,
   exact?: ExactSensitivity,
+  lightCurves: StudyLightCurveProvenance[] = [],
 ) {
   if (file.catalogue.sha256 !== catalogue.snapshot.sha256) {
     throw new Error("This study was saved with a different Kepler catalogue snapshot.");
   }
   if (file.variationSha256 !== (uncertainty?.source_sha256 ?? comparison?.source_sha256 ?? exact?.source_sha256 ?? null)) {
     throw new Error("This study uses a different set of uncertainty or release measurements.");
+  }
+  if (file.lightCurves !== null && !matches(file.lightCurves, lightCurves)) {
+    throw new Error("The saved Kepler light-curve products or processing fingerprints differ from the current replay.");
   }
   if (!matches(file.catalogue, catalogue.snapshot) ||
       !matches(file.evidence, evidence(catalogue, nominal, visible, uncertainty, comparison, audit, exact))) {

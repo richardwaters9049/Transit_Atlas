@@ -70,7 +70,7 @@ Search for `K00005.01` and select **Compare releases**. Switch between **DR24** 
 
 ### Save and replay a study
 
-**Save study…** records the candidate, selected neighbour, active scenario, exact-bound result, release or projection filter, and camera in a portable `.atlas.json` file. The file includes the projected positions and eight-dimensional distance contributions. **Open study…** verifies the data fingerprints and recalculates the evidence before restoring the view.
+**Save study…** records the candidate, selected neighbour, active scenario, exact-bound result, release or projection filter, and camera in a portable `.atlas.json` file. The file includes the projected positions and eight-dimensional distance contributions. Version 2 studies also retain the selected Kepler product identity, signal ephemeris and processing fingerprint. **Open study…** verifies those fingerprints and recalculates the evidence before restoring the view. Version 1 studies remain readable; they predate the light-curve replay check. [Study format and replay contract](docs/study-files.md).
 
 A replayable exact-rank example is included at [`data/studies/2026-11-15-K00100-exact-witness.atlas.json`](data/studies/2026-11-15-K00100-exact-witness.atlas.json). It opens on `K00100.01` with the witness for `K00121.01` selected. Save your own investigations in `data/studies/` or another location of your choice.
 
@@ -100,7 +100,8 @@ python reference/transit_atlas.py --query K00115.03
 python reference/transit_atlas.py --synthetic
 python -m unittest discover -s reference -v
 cargo test -p atlas-core --locked
-(cd desktop && bun run build)
+(cd desktop && bun run test && bun run build)
+cargo test --manifest-path desktop/src-tauri/Cargo.toml
 ```
 
 For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core --example stability -- K00115.03 K00005.01`. Launch with `TRANSIT_ATLAS_TRACE=1 bun run tauri dev` to print a summary when the app checks sampled or exact uncertainty, compares releases or audits the projection.
