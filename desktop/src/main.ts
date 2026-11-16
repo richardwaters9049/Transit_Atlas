@@ -4,6 +4,7 @@ import { auditGroup, auditGroups, auditTable, readAuditFilter, type AuditFilter 
 import { exactDescription, exactMeasurements } from "./exact-view";
 import { releaseMeasurements } from "./release-view";
 import { checkStudy, makeStudy, openStudyFile, parseStudy, saveStudyFile, studyLightCurve } from "./study-file";
+import { commitVerifiedRestore } from "./study-restore";
 import type { StudyView } from "./study-file";
 import type { SignalScene } from "./scene";
 import { showOpening } from "./opening";
@@ -1037,13 +1038,17 @@ async function restoreStudy() {
       : await Promise.all(file.lightCurves.map(({ identity, product }) =>
         getLightCurve(identity.koi_id, product.quarter)));
     const lightCurveProvenance = replayedLightCurves.map(studyLightCurve);
-    const rank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison,
-      projection?.byId.get(candidate), exact, lightCurveProvenance);
-    if (request !== latestRequest) {
-      throw new Error("The active search changed. Open the study again to restore it.");
-    }
-
-    latestRequest++;
+    const rank = commitVerifiedRestore(
+      () => {
+        const verifiedRank = checkStudy(file, catalogue, nominal, visible, uncertaintyReport, comparison,
+          projection?.byId.get(candidate), exact, lightCurveProvenance);
+        if (request !== latestRequest) {
+          throw new Error("The active search changed. Open the study again to restore it.");
+        }
+        return verifiedRank;
+      },
+      () => { latestRequest++; },
+    );
     delete submit.dataset.loading;
     submit.removeAttribute("aria-busy");
     error.hidden = true;
