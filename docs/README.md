@@ -19,6 +19,7 @@ This directory contains the scientific, mathematical and implementation document
 | [Held-out evaluation](evaluation.md) | Host-based train/validation/test protocol, selection of `k`, baselines, confusion counts and failure analysis. |
 | [Research roadmap](research-roadmap.md) | Research milestones, exact rank-sensitivity derivation, reproducible witness and remaining scientific work. |
 | [Kepler light curves](light-curves.md) | FITS provenance, quality filtering, flux normalisation, phase folding and cadence-level reproduction. |
+| [PDCSAP versus SAP sensitivity study](pdcsap-sap-sensitivity-study.md) | Controlled experiment design for measuring flux-processing sensitivity and its effect on the 8D KNN ranking. |
 | [Portable investigation studies](study-files.md) | Version 2 study provenance, selected light-curve identity, processing fingerprints, replay validation and version 1 compatibility. |
 | [Native macOS study UI harness](validation/macos-study-ui-harness.md) | Repeatable native Save/Open, camera restoration and failure-preservation checks through macOS Accessibility. |
 
