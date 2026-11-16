@@ -20,6 +20,7 @@ This directory contains the scientific, mathematical and implementation document
 | [Research roadmap](research-roadmap.md) | Research milestones, exact rank-sensitivity derivation, reproducible witness and remaining scientific work. |
 | [Kepler light curves](light-curves.md) | FITS provenance, quality filtering, flux normalisation, phase folding and cadence-level reproduction. |
 | [Portable investigation studies](study-files.md) | Version 2 study provenance, selected light-curve identity, processing fingerprints, replay validation and version 1 compatibility. |
+| [Native macOS study UI harness](validation/macos-study-ui-harness.md) | Repeatable native Save/Open, camera restoration and failure-preservation checks through macOS Accessibility. |
 
 ## Visual evidence
 
