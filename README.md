@@ -104,6 +104,8 @@ cargo test -p atlas-core --locked
 cargo test --manifest-path desktop/src-tauri/Cargo.toml
 ```
 
+On an interactive macOS desktop, run `bun run test:macos-ui` to build the app and exercise native study Save/Open, 3D camera restoration and fingerprint-failure preservation. Close Transit Atlas first and grant Accessibility permission to the terminal or automation host. See [the GUI harness notes](docs/validation/macos-study-ui-harness.md).
+
 For an uncertainty report in the terminal, run `cargo run --locked -p atlas-core --example stability -- K00115.03 K00005.01`. Launch with `TRANSIT_ATLAS_TRACE=1 bun run tauri dev` to print a summary when the app checks sampled or exact uncertainty, compares releases or audits the projection.
 
 To rebuild the pinned Kepler Q4 examples, run these from the repository root:

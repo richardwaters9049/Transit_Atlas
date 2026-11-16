@@ -2,6 +2,7 @@
   "name": "transit-atlas",
   "private": true,
   "scripts": {
-    "tauri": "cd desktop && bun run tauri"
+    "tauri": "cd desktop && bun run tauri",
+    "test:macos-ui": "bash scripts/test-macos-study-ui.sh"
   }
 }

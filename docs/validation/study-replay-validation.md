@@ -25,17 +25,18 @@ The following checks are automated:
 - Native tests confirm that altering a processing setting or folded output changes the processing fingerprint.
 - Altering the fingerprint presented during replay is rejected by `checkStudy`.
 - Native tests verify that the bundled products load, fingerprints are reproducible, and changes to processing configuration or folded output change the digest.
+- Desktop restore tests verify that fingerprint mismatch and stale-search failures leave the active investigation unchanged; successful restore commits only after verification.
 - Native study-file tests cover atomic save/reopen behaviour and version 2 document validation.
 
 ## Results (16 November 2026)
 
-- Bun study tests: 7 passed.
+- Desktop Bun suite: 10 passed (28 expectations), including study replay and failure-preserving restore.
 - TypeScript check and Vite production build: passed.
 - Rust/Tauri tests: 7 passed, including fixed fingerprint regression checks for both products.
 
-## Explicitly not claimed
+## GUI validation boundary
 
-The native macOS GUI sequence below was exercised manually through the bundled Tauri application. It is a recorded GUI smoke test, not a repeatable automated GUI test or a substitute for the automated checks above.
+The native macOS GUI sequence below records a manual smoke test through the bundled Tauri application. A separate repeatable Accessibility-driven GUI harness now covers the same pinned candidate/reference case, native Save/Open dialogs, camera restoration and tampered-fingerprint failure preservation. Its procedure, results and limits are recorded in [macos-study-ui-harness.md](macos-study-ui-harness.md). Neither GUI run replaces the unit and integration checks above or provides exhaustive view/failure-path coverage.
 
 ## Native macOS GUI save/open smoke test (16 November 2026)
 
@@ -57,4 +58,4 @@ The native macOS GUI sequence below was exercised manually through the bundled T
 
 ### Limits
 
-This was one successful visible macOS run, not a deterministic automated GUI test, and it did not exercise every study view or every possible failure class. It validates the native dialog route and the concrete success/failure state-preservation cases above. The temporary study files were stored outside the repository. A repeatable GUI harness remains future work if these interactions need continuous integration coverage.
+This manual run did not exercise every study view or every possible failure class. It validates the native dialog route and the concrete success/failure state-preservation cases above. The temporary study files were stored outside the repository. The repeatable, interactive macOS harness is documented separately; it is not headless and is not currently part of CI.
