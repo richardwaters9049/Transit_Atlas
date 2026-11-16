@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
-import { checkStudy, makeStudy, parseStudy } from "../src/study-file";
+import { checkStudy, makeStudy, parseStudy, studyLightCurve } from "../src/study-file";
 
 const legacyDocument = JSON.parse(
   readFileSync(new URL("../../data/studies/K00005.01.atlas.json", import.meta.url), "utf8"),
@@ -182,5 +182,54 @@ describe("portable study provenance", () => {
       undefined,
       [{ ...lightCurveProvenance(), processing_fingerprint: "c".repeat(64) }],
     )).toThrow("processing fingerprints differ");
+  });
+});
+
+
+
+describe("bundled Kepler study replay evidence", () => {
+  const candidate = JSON.parse(readFileSync(
+    new URL("../../data/generated/lightcurves/K00115.03-q04.json", import.meta.url), "utf8",
+  ));
+  const reference = JSON.parse(readFileSync(
+    new URL("../../data/generated/lightcurves/K02961.01-q04.json", import.meta.url), "utf8",
+  ));
+
+  function withFingerprint(document: Record<string, any>) {
+    return { ...document, processing_fingerprint: "a".repeat(64) };
+  }
+
+  test("loads the real candidate and reference products and preserves source provenance", () => {
+    const candidateEvidence = studyLightCurve(withFingerprint(candidate) as never);
+    const referenceEvidence = studyLightCurve(withFingerprint(reference) as never);
+
+    expect(candidateEvidence.identity).toEqual({
+      koi_id: "K00115.03", host_id: 9579641, signal_role: "candidate",
+    });
+    expect(referenceEvidence.identity).toEqual({
+      koi_id: "K02961.01", host_id: 10471515, signal_role: "reference",
+    });
+    expect(candidateEvidence.product.source_sha256).toBe(
+      "ec65ca837736b99719c92ac064c5f1618f0715ac9258921bc18330b9e783fe3a",
+    );
+    expect(referenceEvidence.product.source_sha256).toBe(
+      "a0bf92fa73c90f42e3927e315410fe72dc85a701d26e15a183685a494e9587e5",
+    );
+    expect(candidate.folded.cadences_total).toBe(4159);
+    expect(candidate.folded.cadences_used).toBe(4108);
+    expect(reference.folded.cadences_total).toBe(4159);
+    expect(reference.folded.cadences_used).toBe(4108);
+  });
+
+  test("requires both products for the selected candidate/reference investigation", () => {
+    const document = structuredClone(versionTwoDocument());
+    document.selection.candidate = "K00115.03";
+    document.selection.neighbour = "K02961.01";
+    document.provenance.light_curves = [
+      studyLightCurve(withFingerprint(candidate) as never),
+    ];
+    expect(() => parseStudy(JSON.stringify(document))).toThrow(
+      "missing the selected reference light-curve product",
+    );
   });
 });

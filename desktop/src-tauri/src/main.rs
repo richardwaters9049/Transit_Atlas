@@ -179,6 +179,24 @@ mod light_curve_tests {
     }
 
     #[test]
+    fn bundled_product_fingerprints_match_the_pinned_replay_fixtures() {
+        for (koi_id, expected) in [
+            (
+                "K00115.03",
+                "b2c5aae13d4df0cd0e709c12dc56c03082b9c9a4739a4e3588e948763e18440e",
+            ),
+            (
+                "K02961.01",
+                "2d64ea1d9084791d2a9e2f3b40e08b6ffb98b88891ebe502fa32554b33c9239d",
+            ),
+        ] {
+            let document =
+                light_curve(koi_id.to_string(), 4).expect("bundled light curve should load");
+            assert_eq!(document["processing_fingerprint"], expected);
+        }
+    }
+
+    #[test]
     fn fingerprint_changes_when_processing_or_folded_output_changes() {
         let mut document =
             light_curve("K00115.03".to_string(), 4).expect("bundled light curve should load");
