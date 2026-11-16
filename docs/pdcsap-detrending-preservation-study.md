@@ -2,7 +2,7 @@
 
 ## Status and purpose
 
-**Status: experiment designed; no processing results generated.**
+**Status: executed; no tested configuration met the predeclared preservation criteria.** See [the executed results and decision](pdcsap-detrending-preservation-results.md).
 
 This study is the next controlled processing-sensitivity experiment for the pinned Kepler Q4 DR25 products. It asks whether a transparent, local trend estimate can reduce residual low-frequency variation in PDCSAP without attenuating a transit-shaped signal. It does not assume that additional flattening is beneficial: PDCSAP is already conditioned for transit searches, so leaving it unchanged is the essential control.
 
@@ -147,4 +147,4 @@ Only Q4 is currently pinned for these two targets. This study cannot establish q
 
 ## Decision after design
 
-The next implementation step is to build the offline reference experiment and its synthetic injection/recovery tests against the two pinned Q4 products. No scientific result should be claimed until those tests and the complete analysis have run successfully.
+The offline reference experiment and deterministic injection/recovery tests have now been executed against both pinned Q4 products. No configuration met the preservation criteria, so unflattened PDCSAP remains the baseline. See [the executed results and decision](pdcsap-detrending-preservation-results.md).
