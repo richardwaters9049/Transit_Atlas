@@ -103,6 +103,8 @@ The first JSON data contract is `transit-atlas.kepler-lightcurve`, version 1. It
 
 Offline replay must use the local FITS bytes and the saved processing settings. It must not silently download a newer archive product. A changed product or ephemeris is a new analysis input and must produce a new fingerprint.
 
+Portable `.atlas.json` investigations also retain the selected candidate/reference product identities and a processing fingerprint over the source metadata, signal ephemeris, processing configuration and folded output. Reopening a version 2 study checks those values against the bundled product before restoring the investigation. See [Portable investigation studies](study-files.md) for the study schema and replay contract.
+
 ## Current limitations
 
 - A phase-folded curve is an inspection view, not evidence that a planet is confirmed.

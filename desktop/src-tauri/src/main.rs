@@ -1,5 +1,6 @@
 use atlas_core::Atlas;
-use serde_json::Value;
+use serde_json::{Map, Value};
+use sha2::{Digest, Sha256};
 use tauri::{Manager, State};
 
 mod study_files;
@@ -7,6 +8,28 @@ mod study_files;
 #[tauri::command]
 fn catalogue(state: State<'_, Atlas>) -> Result<Value, String> {
     serde_json::to_value(state.catalogue()).map_err(|error| error.to_string())
+}
+
+fn light_curve_fingerprint(document: &Value) -> Result<String, String> {
+    let mut payload = Map::new();
+    for field in [
+        "schema",
+        "version",
+        "identity",
+        "ephemeris",
+        "source",
+        "processing",
+        "folded",
+    ] {
+        let value = document
+            .get(field)
+            .ok_or_else(|| format!("Light-curve document is missing {field}."))?;
+        payload.insert(field.to_string(), value.clone());
+    }
+    let bytes = serde_json::to_vec(&Value::Object(payload))
+        .map_err(|error| format!("Could not serialise light-curve fingerprint input: {error}"))?;
+    let digest = Sha256::digest(bytes);
+    Ok(digest.iter().map(|byte| format!("{byte:02x}")).collect())
 }
 
 #[tauri::command]
@@ -22,9 +45,12 @@ fn light_curve(koi_id: String, quarter: u8) -> Result<Value, String> {
     };
     let mut document: Value = serde_json::from_str(source)
         .map_err(|error| format!("Invalid bundled light-curve document: {error}"))?;
-    if let Some(object) = document.as_object_mut() {
-        object.remove("cadences");
-    }
+    let fingerprint = light_curve_fingerprint(&document)?;
+    let object = document
+        .as_object_mut()
+        .ok_or_else(|| "Bundled light-curve document must be a JSON object.".to_string())?;
+    object.insert("processing_fingerprint".into(), Value::String(fingerprint));
+    object.remove("cadences");
     Ok(document)
 }
 
@@ -122,6 +148,7 @@ fn main() {
 #[cfg(test)]
 mod light_curve_tests {
     use super::light_curve;
+    use serde_json::Value;
 
     #[test]
     fn bundled_candidate_and_reference_documents_load_for_the_ui() {
@@ -136,7 +163,42 @@ mod light_curve_tests {
                 .as_array()
                 .is_some_and(|points| !points.is_empty()));
             assert!(document.get("cadences").is_none());
+            let fingerprint = document["processing_fingerprint"]
+                .as_str()
+                .expect("processing fingerprint should be present");
+            assert_eq!(fingerprint.len(), 64);
+            assert!(fingerprint
+                .chars()
+                .all(|character| character.is_ascii_hexdigit()));
+            assert_eq!(
+                fingerprint,
+                super::light_curve_fingerprint(&document)
+                    .expect("fingerprint should be reproducible")
+            );
         }
+    }
+
+    #[test]
+    fn fingerprint_changes_when_processing_or_folded_output_changes() {
+        let mut document =
+            light_curve("K00115.03".to_string(), 4).expect("bundled light curve should load");
+        let original = document["processing_fingerprint"]
+            .as_str()
+            .expect("fingerprint should be present")
+            .to_string();
+
+        document["processing"]["quality_bitmask"] = Value::from(0);
+        assert_ne!(
+            original,
+            super::light_curve_fingerprint(&document).expect("changed settings should hash")
+        );
+
+        document["processing"]["quality_bitmask"] = Value::from(1_130_799);
+        document["folded"]["points"][0]["phase"] = Value::from(0.123);
+        assert_ne!(
+            original,
+            super::light_curve_fingerprint(&document).expect("changed output should hash")
+        );
     }
 
     #[test]
