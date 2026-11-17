@@ -24,6 +24,7 @@ This directory contains the scientific, mathematical and implementation document
 | [PDCSAP detrending results](pdcsap-detrending-preservation-results.md) | Executed results for both Q4 targets, injection recovery, transit-shape checks and the negative decision to retain unflattened PDCSAP. |
 | [Multi-quarter PDCSAP validation](pdcsap-multi-quarter-validation.md) | Q0–Q17 study design, archive provenance, independent-quarter processing, propagated ephemeris uncertainty and predeclared validation criteria. |
 | [Multi-quarter PDCSAP results](pdcsap-multi-quarter-validation-results.md) | Executed Q0–Q17 results for both targets, Q4 replication, injection recovery, quarter coverage and the decision to retain unflattened PDCSAP. |
+| [Kepler population validation study](kepler-population-validation-study.md) | Pre-registered 36-target sample design, archive eligibility gate, physical injection plan, negative/instrumental controls and analysis safeguards.
 | [Portable investigation studies](study-files.md) | Version 2 study provenance, selected light-curve identity, processing fingerprints, replay validation and version 1 compatibility. |
 | [Native macOS study UI harness](validation/macos-study-ui-harness.md) | Repeatable native Save/Open, camera restoration and failure-preservation checks through macOS Accessibility. |
 
