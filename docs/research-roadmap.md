@@ -116,6 +116,19 @@ The importer has been exercised through the public MAST AWS mirror for both pinn
 
 [Kepler cadence and quality flags](https://lightkurve.github.io/lightkurve/tutorials/2-creating-light-curves/2-2-kepler-noise-1-data-gaps-and-quality-flags.html) · [Lightkurve documentation](https://lightkurve.github.io/lightkurve/)
 
+## Third milestone · multi-quarter PDCSAP validation (complete)
+
+The multi-quarter validation has been executed against all 18 available Kepler DR25 long-cadence quarters for K00115.03 and K02961.01 (36 FITS products). Each quarter remains independent; no stitching, gap filling or cross-quarter smoothing is used. The newly downloaded Q4 files are byte-identical to the original pinned Q4 products, and the Q4 measurements reproduce the earlier study exactly.
+
+Second-order Savitzky–Golay windows of 101 and 201 cadences were compared in unmasked and transit-masked modes. The 401-cadence window was excluded from the all-quarter comparison because it cannot be evaluated consistently across the short commissioning quarter and short gap-separated segments. The 101-cadence configurations have sufficient quarter coverage but preserve the descriptive depth in only 0–2 of 16–17 evaluable quarters. The 201-cadence configurations have only 14 evaluable quarters, below the predeclared 15-quarter minimum, and also fail depth/shape preservation. All configurations reduce median out-of-transit MAD substantially, but none meets the full preservation criteria. Keep unflattened PDCSAP as the sole application baseline. See [the protocol](pdcsap-multi-quarter-validation.md) and [executed results](pdcsap-multi-quarter-validation-results.md).
+
+- [x] Acquire all 36 public MAST Q0–Q17 DR25 long-cadence products and record S3 URI, quarter, size, cadence count, pipeline version and SHA-256.
+- [x] Verify Q4 downloads are byte-identical to the previously pinned FITS products.
+- [x] Implement offline independent-quarter analysis, propagated ephemeris uncertainty, gap-safe trend estimation, injection/recovery and null controls for 101/201-cadence configurations.
+- [x] Execute all 36 products; export per-quarter numerical results, injection ledgers, null controls and target summary plots.
+- [x] Confirm exact Q4 numerical replication and report unsupported quarter/configuration combinations.
+- [x] Document the negative preservation decision; retain unflattened PDCSAP as the application baseline.
+
 ## What would demonstrate research value
 
 - **Independent numerical reproduction.** Review a fixed set of confirmed, false-positive and ambiguous cases from disjoint hosts. Compare time and flux transformations with a named notebook and show where the conclusions disagree.
