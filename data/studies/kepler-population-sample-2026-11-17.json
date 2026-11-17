@@ -1,0 +1,610 @@
+{
+  "schema": "transit-atlas.kepler-population-sample",
+  "schema_version": 1,
+  "status": "provisional_sample_frame_not_archive_validated",
+  "created_utc_date": "2026-11-17",
+  "selection_seed": "TransitAtlas-Kepler-population-v1-2026-11-17",
+  "selection_method": "Within each disposition, calculate empirical model-SNR tertiles; select four rows from each tertile using SHA-256 ordering and without replacement by host star.",
+  "source": {
+    "archive": "NASA Exoplanet Archive",
+    "table": "cumulative",
+    "snapshot_date": "2026-11-14",
+    "file": "data/raw/kepler-koi-cumulative-2026-11-14.csv",
+    "sha256": "91290c1efd8a7c3a5695cd05494b17c2f6f59a833ebf5ca3167862ddfa35ddc4"
+  },
+  "design": {
+    "dispositions": [
+      "CONFIRMED",
+      "FALSE POSITIVE",
+      "CANDIDATE"
+    ],
+    "snr_strata": [
+      "low",
+      "middle",
+      "high"
+    ],
+    "per_stratum": 4,
+    "target_count": 36
+  },
+  "stratum_summary": {
+    "CONFIRMED": {
+      "eligible_rows": 2746,
+      "eligible_unique_hosts": 1974,
+      "snr_tertile_boundaries": {
+        "low_upper_inclusive": 21.5,
+        "middle_upper_inclusive": 41.2
+      },
+      "strata": {
+        "low": {
+          "eligible_rows": 921,
+          "selected": 4
+        },
+        "middle": {
+          "eligible_rows": 912,
+          "selected": 4
+        },
+        "high": {
+          "eligible_rows": 913,
+          "selected": 4
+        }
+      }
+    },
+    "FALSE POSITIVE": {
+      "eligible_rows": 4581,
+      "eligible_unique_hosts": 4485,
+      "snr_tertile_boundaries": {
+        "low_upper_inclusive": 16.1,
+        "middle_upper_inclusive": 124.6999999999999
+      },
+      "strata": {
+        "low": {
+          "eligible_rows": 1528,
+          "selected": 4
+        },
+        "middle": {
+          "eligible_rows": 1526,
+          "selected": 4
+        },
+        "high": {
+          "eligible_rows": 1527,
+          "selected": 4
+        }
+      }
+    },
+    "CANDIDATE": {
+      "eligible_rows": 1872,
+      "eligible_unique_hosts": 1769,
+      "snr_tertile_boundaries": {
+        "low_upper_inclusive": 9.6,
+        "middle_upper_inclusive": 13.033333333333324
+      },
+      "strata": {
+        "low": {
+          "eligible_rows": 641,
+          "selected": 4
+        },
+        "middle": {
+          "eligible_rows": 607,
+          "selected": 4
+        },
+        "high": {
+          "eligible_rows": 624,
+          "selected": 4
+        }
+      }
+    }
+  },
+  "targets": [
+    {
+      "koi_id": "K00117.04",
+      "host_id": 10875245,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "low",
+      "model_snr": 14.7,
+      "period_days": 7.95825328,
+      "duration_hours": 4.377,
+      "depth_ppm": 50.0,
+      "impact_parameter": 0.706,
+      "effective_temperature_k": 5847.0,
+      "surface_gravity_log10_cgs": 4.191,
+      "stellar_radius_solar": 1.402
+    },
+    {
+      "koi_id": "K02195.03",
+      "host_id": 11401767,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "low",
+      "model_snr": 17.0,
+      "period_days": 6.84978728,
+      "duration_hours": 4.919,
+      "depth_ppm": 139.2,
+      "impact_parameter": 0.954,
+      "effective_temperature_k": 6056.0,
+      "surface_gravity_log10_cgs": 4.332,
+      "stellar_radius_solar": 1.209
+    },
+    {
+      "koi_id": "K02289.02",
+      "host_id": 3867615,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "low",
+      "model_snr": 20.9,
+      "period_days": 20.0983676,
+      "duration_hours": 5.207,
+      "depth_ppm": 157.8,
+      "impact_parameter": 0.02,
+      "effective_temperature_k": 6053.0,
+      "surface_gravity_log10_cgs": 4.279,
+      "stellar_radius_solar": 1.26
+    },
+    {
+      "koi_id": "K02936.01",
+      "host_id": 10880507,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "low",
+      "model_snr": 13.7,
+      "period_days": 6.4802138,
+      "duration_hours": 3.27,
+      "depth_ppm": 142.0,
+      "impact_parameter": 0.725,
+      "effective_temperature_k": 5496.0,
+      "surface_gravity_log10_cgs": 4.417,
+      "stellar_radius_solar": 0.983
+    },
+    {
+      "koi_id": "K00784.02",
+      "host_id": 12066335,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "middle",
+      "model_snr": 30.3,
+      "period_days": 10.06524317,
+      "duration_hours": 1.369,
+      "depth_ppm": 1053.3,
+      "impact_parameter": 0.628,
+      "effective_temperature_k": 4077.0,
+      "surface_gravity_log10_cgs": 4.702,
+      "stellar_radius_solar": 0.56
+    },
+    {
+      "koi_id": "K01432.01",
+      "host_id": 11014932,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "middle",
+      "model_snr": 34.5,
+      "period_days": 6.88595222,
+      "duration_hours": 4.148,
+      "depth_ppm": 428.5,
+      "impact_parameter": 0.953,
+      "effective_temperature_k": 5616.0,
+      "surface_gravity_log10_cgs": 4.394,
+      "stellar_radius_solar": 0.999
+    },
+    {
+      "koi_id": "K01581.01",
+      "host_id": 7939330,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "middle",
+      "model_snr": 39.5,
+      "period_days": 29.5422566,
+      "duration_hours": 13.902,
+      "depth_ppm": 879.9,
+      "impact_parameter": 0.959,
+      "effective_temperature_k": 5510.0,
+      "surface_gravity_log10_cgs": 4.572,
+      "stellar_radius_solar": 0.803
+    },
+    {
+      "koi_id": "K01602.01",
+      "host_id": 4860678,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "middle",
+      "model_snr": 21.8,
+      "period_days": 9.97716876,
+      "duration_hours": 5.908,
+      "depth_ppm": 252.9,
+      "impact_parameter": 0.002,
+      "effective_temperature_k": 5557.0,
+      "surface_gravity_log10_cgs": 4.037,
+      "stellar_radius_solar": 1.616
+    },
+    {
+      "koi_id": "K00351.02",
+      "host_id": 11442793,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "high",
+      "model_snr": 232.4,
+      "period_days": 210.6013843,
+      "duration_hours": 11.9922,
+      "depth_ppm": 4159.3,
+      "impact_parameter": 0.002,
+      "effective_temperature_k": 5970.0,
+      "surface_gravity_log10_cgs": 4.317,
+      "stellar_radius_solar": 1.2
+    },
+    {
+      "koi_id": "K00409.01",
+      "host_id": 5444548,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "high",
+      "model_snr": 87.8,
+      "period_days": 13.24931848,
+      "duration_hours": 4.4859,
+      "depth_ppm": 647.6,
+      "impact_parameter": 0.62,
+      "effective_temperature_k": 5799.0,
+      "surface_gravity_log10_cgs": 4.361,
+      "stellar_radius_solar": 1.078
+    },
+    {
+      "koi_id": "K01576.02",
+      "host_id": 5299459,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "high",
+      "model_snr": 51.2,
+      "period_days": 13.08424286,
+      "duration_hours": 3.0401,
+      "depth_ppm": 662.0,
+      "impact_parameter": 0.701,
+      "effective_temperature_k": 5511.0,
+      "surface_gravity_log10_cgs": 4.426,
+      "stellar_radius_solar": 0.987
+    },
+    {
+      "koi_id": "K01822.01",
+      "host_id": 5124667,
+      "disposition": "CONFIRMED",
+      "snr_stratum": "high",
+      "model_snr": 70.6,
+      "period_days": 150.8783198,
+      "duration_hours": 8.6797,
+      "depth_ppm": 659.9,
+      "impact_parameter": 0.022,
+      "effective_temperature_k": 5504.0,
+      "surface_gravity_log10_cgs": 3.999,
+      "stellar_radius_solar": 1.737
+    },
+    {
+      "koi_id": "K04767.01",
+      "host_id": 5802292,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "low",
+      "model_snr": 10.6,
+      "period_days": 1.208528832,
+      "duration_hours": 1.336,
+      "depth_ppm": 180.8,
+      "impact_parameter": 0.039,
+      "effective_temperature_k": 6072.0,
+      "surface_gravity_log10_cgs": 4.51,
+      "stellar_radius_solar": 0.923
+    },
+    {
+      "koi_id": "K05627.01",
+      "host_id": 9153246,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "low",
+      "model_snr": 5.2,
+      "period_days": 243.954706,
+      "duration_hours": 2.562,
+      "depth_ppm": 291.7,
+      "impact_parameter": 0.1207,
+      "effective_temperature_k": 5578.0,
+      "surface_gravity_log10_cgs": 4.578,
+      "stellar_radius_solar": 0.794
+    },
+    {
+      "koi_id": "K07658.01",
+      "host_id": 3542542,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "low",
+      "model_snr": 9.5,
+      "period_days": 3.47148164,
+      "duration_hours": 4.679,
+      "depth_ppm": 122.7,
+      "impact_parameter": 0.719,
+      "effective_temperature_k": 5297.0,
+      "surface_gravity_log10_cgs": 4.626,
+      "stellar_radius_solar": 0.716
+    },
+    {
+      "koi_id": "K08114.01",
+      "host_id": 6043574,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "low",
+      "model_snr": 8.6,
+      "period_days": 381.782641,
+      "duration_hours": 4.52,
+      "depth_ppm": 367.6,
+      "impact_parameter": 1.204,
+      "effective_temperature_k": 6056.0,
+      "surface_gravity_log10_cgs": 3.816,
+      "stellar_radius_solar": 2.29
+    },
+    {
+      "koi_id": "K02233.01",
+      "host_id": 8963721,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "middle",
+      "model_snr": 83.9,
+      "period_days": 1.811460943,
+      "duration_hours": 5.065,
+      "depth_ppm": 428.5,
+      "impact_parameter": 0.971,
+      "effective_temperature_k": 5700.0,
+      "surface_gravity_log10_cgs": 4.382,
+      "stellar_radius_solar": 1.008
+    },
+    {
+      "koi_id": "K02823.01",
+      "host_id": 10341917,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "middle",
+      "model_snr": 55.5,
+      "period_days": 0.93375241,
+      "duration_hours": 6.352,
+      "depth_ppm": 518.0,
+      "impact_parameter": 0.989,
+      "effective_temperature_k": 5402.0,
+      "surface_gravity_log10_cgs": 4.581,
+      "stellar_radius_solar": 0.815
+    },
+    {
+      "koi_id": "K02891.01",
+      "host_id": 10068024,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "middle",
+      "model_snr": 19.2,
+      "period_days": 2.023126394,
+      "duration_hours": 1.2771,
+      "depth_ppm": 72.2,
+      "impact_parameter": 0.391,
+      "effective_temperature_k": 6349.0,
+      "surface_gravity_log10_cgs": 4.422,
+      "stellar_radius_solar": 1.059
+    },
+    {
+      "koi_id": "K07025.01",
+      "host_id": 8367298,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "middle",
+      "model_snr": 36.1,
+      "period_days": 5.1348689,
+      "duration_hours": 48.69,
+      "depth_ppm": 115.8,
+      "impact_parameter": 1.137,
+      "effective_temperature_k": 5515.0,
+      "surface_gravity_log10_cgs": 4.357,
+      "stellar_radius_solar": 1.001
+    },
+    {
+      "koi_id": "K03491.01",
+      "host_id": 12164634,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "high",
+      "model_snr": 169.5,
+      "period_days": 89.3313828,
+      "duration_hours": 11.919,
+      "depth_ppm": 2177.6,
+      "impact_parameter": 0.899,
+      "effective_temperature_k": 6860.0,
+      "surface_gravity_log10_cgs": 4.233,
+      "stellar_radius_solar": 1.467
+    },
+    {
+      "koi_id": "K04279.01",
+      "host_id": 5876360,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "high",
+      "model_snr": 143.0,
+      "period_days": 1.050852976,
+      "duration_hours": 1.6788,
+      "depth_ppm": 41694.0,
+      "impact_parameter": 1.111,
+      "effective_temperature_k": 5780.0,
+      "surface_gravity_log10_cgs": 4.438,
+      "stellar_radius_solar": 1.0
+    },
+    {
+      "koi_id": "K06038.01",
+      "host_id": 7436177,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "high",
+      "model_snr": 1863.4,
+      "period_days": 19.93364711,
+      "duration_hours": 8.6122,
+      "depth_ppm": 174830.0,
+      "impact_parameter": 0.852,
+      "effective_temperature_k": 6505.0,
+      "surface_gravity_log10_cgs": 4.25,
+      "stellar_radius_solar": 1.29
+    },
+    {
+      "koi_id": "K06879.01",
+      "host_id": 7455553,
+      "disposition": "FALSE POSITIVE",
+      "snr_stratum": "high",
+      "model_snr": 202.0,
+      "period_days": 3.258249472,
+      "duration_hours": 2.6358,
+      "depth_ppm": 1643.5,
+      "impact_parameter": 1.264,
+      "effective_temperature_k": 6712.0,
+      "surface_gravity_log10_cgs": 3.859,
+      "stellar_radius_solar": 2.361
+    },
+    {
+      "koi_id": "K05638.01",
+      "host_id": 9209981,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "low",
+      "model_snr": 7.6,
+      "period_days": 290.02002,
+      "duration_hours": 23.87,
+      "depth_ppm": 172.5,
+      "impact_parameter": 0.5367,
+      "effective_temperature_k": 6452.0,
+      "surface_gravity_log10_cgs": 4.384,
+      "stellar_radius_solar": 1.148
+    },
+    {
+      "koi_id": "K07673.01",
+      "host_id": 3852872,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "low",
+      "model_snr": 6.7,
+      "period_days": 80.769893,
+      "duration_hours": 4.2,
+      "depth_ppm": 128.5,
+      "impact_parameter": 0.158,
+      "effective_temperature_k": 4965.0,
+      "surface_gravity_log10_cgs": 3.961,
+      "stellar_radius_solar": 1.708
+    },
+    {
+      "koi_id": "K08033.01",
+      "host_id": 10844823,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "low",
+      "model_snr": 8.2,
+      "period_days": 362.13187,
+      "duration_hours": 5.59,
+      "depth_ppm": 849.0,
+      "impact_parameter": 0.397,
+      "effective_temperature_k": 5176.0,
+      "surface_gravity_log10_cgs": 4.567,
+      "stellar_radius_solar": 0.766
+    },
+    {
+      "koi_id": "K08055.01",
+      "host_id": 11453349,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "low",
+      "model_snr": 8.1,
+      "period_days": 4.40660737,
+      "duration_hours": 2.107,
+      "depth_ppm": 70.7,
+      "impact_parameter": 0.433,
+      "effective_temperature_k": 6063.0,
+      "surface_gravity_log10_cgs": 4.47,
+      "stellar_radius_solar": 1.001
+    },
+    {
+      "koi_id": "K02756.02",
+      "host_id": 6964929,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "middle",
+      "model_snr": 11.6,
+      "period_days": 5.06993245,
+      "duration_hours": 3.241,
+      "depth_ppm": 93.6,
+      "impact_parameter": 0.3584,
+      "effective_temperature_k": 5957.0,
+      "surface_gravity_log10_cgs": 4.506,
+      "stellar_radius_solar": 0.937
+    },
+    {
+      "koi_id": "K04999.01",
+      "host_id": 3646449,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "middle",
+      "model_snr": 9.9,
+      "period_days": 65.752109,
+      "duration_hours": 6.854,
+      "depth_ppm": 382.5,
+      "impact_parameter": 0.109,
+      "effective_temperature_k": 5816.0,
+      "surface_gravity_log10_cgs": 4.432,
+      "stellar_radius_solar": 1.03
+    },
+    {
+      "koi_id": "K05816.01",
+      "host_id": 10656842,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "middle",
+      "model_snr": 11.4,
+      "period_days": 82.508054,
+      "duration_hours": 3.806,
+      "depth_ppm": 351.9,
+      "impact_parameter": 0.0379,
+      "effective_temperature_k": 4986.0,
+      "surface_gravity_log10_cgs": 3.01,
+      "stellar_radius_solar": 7.733
+    },
+    {
+      "koi_id": "K06672.01",
+      "host_id": 6187508,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "middle",
+      "model_snr": 10.6,
+      "period_days": 2.28494301,
+      "duration_hours": 1.01,
+      "depth_ppm": 161.8,
+      "impact_parameter": 0.013,
+      "effective_temperature_k": 5396.0,
+      "surface_gravity_log10_cgs": 4.571,
+      "stellar_radius_solar": 0.789
+    },
+    {
+      "koi_id": "K00935.04",
+      "host_id": 9347899,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "high",
+      "model_snr": 18.2,
+      "period_days": 9.61731426,
+      "duration_hours": 3.8692,
+      "depth_ppm": 234.0,
+      "impact_parameter": 0.331,
+      "effective_temperature_k": 6035.0,
+      "surface_gravity_log10_cgs": 4.22,
+      "stellar_radius_solar": 1.257
+    },
+    {
+      "koi_id": "K02900.01",
+      "host_id": 4846856,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "high",
+      "model_snr": 17.1,
+      "period_days": 46.151253,
+      "duration_hours": 5.346,
+      "depth_ppm": 649.0,
+      "impact_parameter": 0.688,
+      "effective_temperature_k": 5204.0,
+      "surface_gravity_log10_cgs": 4.525,
+      "stellar_radius_solar": 0.769
+    },
+    {
+      "koi_id": "K03339.01",
+      "host_id": 7772914,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "high",
+      "model_snr": 21.6,
+      "period_days": 23.1334494,
+      "duration_hours": 3.602,
+      "depth_ppm": 456.3,
+      "impact_parameter": 0.954,
+      "effective_temperature_k": 5712.0,
+      "surface_gravity_log10_cgs": 4.382,
+      "stellar_radius_solar": 0.932
+    },
+    {
+      "koi_id": "K04575.01",
+      "host_id": 9893468,
+      "disposition": "CANDIDATE",
+      "snr_stratum": "high",
+      "model_snr": 14.2,
+      "period_days": 201.325036,
+      "duration_hours": 14.4,
+      "depth_ppm": 125.4,
+      "impact_parameter": 0.597,
+      "effective_temperature_k": 6120.0,
+      "surface_gravity_log10_cgs": 4.093,
+      "stellar_radius_solar": 1.699
+    }
+  ],
+  "archive_validation_required_before_lock": [
+    "Confirm an unambiguous KOI-to-KIC mapping and retrieveable DR25 long-cadence products.",
+    "Record available quarters, cadence counts, gaps, quality-usable cadences and product checksums.",
+    "Check that each target has sufficient observed transit events and usable out-of-transit baseline.",
+    "Check ephemeris uncertainty against transit duration; classify limitations before any replacement.",
+    "If a target fails eligibility, replace it only with the next deterministic eligible row in the same disposition/SNR stratum and record the exclusion."
+  ]
+}
